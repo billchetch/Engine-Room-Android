@@ -1,0 +1,8 @@
+include ':utilities'
+include ':cmalarms'
+include ':messaging'
+include ':webservices'
+include ':appframework'
+include ':appresources'
+include ':app'
+rootProject.name = "Engine Room"

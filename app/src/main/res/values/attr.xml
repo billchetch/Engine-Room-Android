@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="IndicatorFragment">
+        <attr name="indicator_name" format="string"/>
+        <attr name="small_indicator" format="boolean"/>
+    </declare-styleable>
+</resources>

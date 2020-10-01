@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Engine Room</string>
+    <string name="display_orientation">PORTRAIT</string>
 </resources>

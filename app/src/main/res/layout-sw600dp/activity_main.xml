@@ -53,7 +53,6 @@
         android:id="@+id/erMainLayout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:padding="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/alarmPanelFragment"
         tools:layout_editor_absoluteX="0dp">
@@ -61,21 +60,19 @@
         <fragment
             android:id="@+id/pompaCelupFragment"
             android:name="net.chetch.engineroom.IndicatorFragment"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
             app:indicator_name="Pompa Celup"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <fragment
             android:id="@+id/genset1"
             android:name="net.chetch.engineroom.EngineFragment"
-            android:layout_width="0dp"
+            android:layout_width="400dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="8dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/pompaCelupFragment" />
 

@@ -5,6 +5,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -25,13 +26,18 @@ import java.util.Map;
 import java.util.Random;
 
 public class MainActivity extends GenericActivity {
+    public enum DisplayOrientation{
+        PORTRAIT,
+        LANDSCAPE
+    }
+
+    static public DisplayOrientation Orientation;
+
     AlarmsMessagingModel alarmsModel;
     EngineRoomMessagingModel engineRoomModel;
     IndicatorFragment pompaCelupFragment;
 
     EngineFragment genset1;
-
-    Random rnd;
 
     Observer dataLoadProgress  = obj -> {
         WebserviceViewModel.LoadProgress progress = (WebserviceViewModel.LoadProgress) obj;
@@ -49,9 +55,15 @@ public class MainActivity extends GenericActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Orientation = DisplayOrientation.LANDSCAPE.valueOf(getString(R.string.display_orientation));
+        Configuration configuration = getResources().getConfiguration();
+        Log.i("Main", "Metrics of width, smallest width, height: " + configuration.screenWidthDp + "," + configuration.smallestScreenWidthDp + "," + configuration.screenHeightDp);
+        Log.i("Main", "Creating main activity with orientation " + Orientation);
+
         try {
             //String apiBaseURL = "http://192.168.43.123:8001/api/";
-            String apiBaseURL = "http://192.168.0.123:8001/api/";
+            //String apiBaseURL = "http://192.168.0.123:8001/api/";
+            String apiBaseURL = "http://192.168.0.150:8001/api/";
             //String apiBaseURL = "http://192.168.1.100:8001/api/";
             //String apiBaseURL = "http://192.168.0.106:8001/api/";
             //String apiBaseURL = "http://192.168.0.52:8001/api/";
@@ -65,13 +77,12 @@ public class MainActivity extends GenericActivity {
         Log.i("Main", "Calling load data");
         MessagingViewModel.setClientName("AndroidCMEngineRoom");
 
-        /*alarmsModel = ViewModelProviders.of(this).get(AlarmsMessagingModel.class);
+        alarmsModel = ViewModelProviders.of(this).get(AlarmsMessagingModel.class);
 
         alarmsModel.getError().observe(this, throwable -> {
             showError(throwable);
         });
         alarmsModel.loadData(dataLoadProgress);
-        */
 
         engineRoomModel = ViewModelProviders.of(this).get(EngineRoomMessagingModel.class);
         engineRoomModel.getError().observe(this, throwable -> {

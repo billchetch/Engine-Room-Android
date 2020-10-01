@@ -55,6 +55,12 @@ public class EngineFragment extends Fragment {
                     updateRPM((int)rpm.getAverageRPM());
                }
             });
+
+            model.getTemperatureSensor().observe(getViewLifecycleOwner(), sensor->{
+                if(isEngineForDevice(sensor.sensorID)){
+                    updateTemp(sensor.temperature.intValue());
+                }
+            });
         }
     }
 

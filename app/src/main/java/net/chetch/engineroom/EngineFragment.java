@@ -9,7 +9,9 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import net.chetch.cmalarms.models.AlarmsMessagingModel;
+import net.chetch.engineroom.data.Engine;
 import net.chetch.engineroom.models.EngineRoomMessagingModel;
+import net.chetch.utilities.Utils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,6 +22,8 @@ public class EngineFragment extends Fragment {
     EngineRoomMessagingModel model;
 
     String engineID;
+    String engineName;
+    Engine engine;
     View contentView;
     LinearScaleFragment rpmFragment;
     LinearScaleFragment tempFragment;
@@ -61,6 +65,19 @@ public class EngineFragment extends Fragment {
                     updateTemp(sensor.temperature.intValue());
                 }
             });
+
+            model.getOilSensor().observe(getViewLifecycleOwner(), sensor->{
+                if(isEngineForDevice(sensor.getDeviceID())){
+                    updateOilSensor(sensor.isOn());
+                }
+            });
+
+            model.getEngine().observe(getViewLifecycleOwner(), eng->{
+                if(engineID != null && engineID.equals(eng.getEngineID())){
+                    engine  = eng;
+                    updateEngineDetails();
+                }
+            });
         }
     }
 
@@ -74,6 +91,8 @@ public class EngineFragment extends Fragment {
     }
 
     public void setName(String name){
+        if(engineName == null)engineName = name;
+
         TextView tv = contentView.findViewById(R.id.engineName);
         tv.setText(name);
     }
@@ -93,5 +112,30 @@ public class EngineFragment extends Fragment {
 
     public void updateTemp(int temp){
         tempFragment.updateValue(temp);
+    }
+
+    public void updateOilSensor(boolean isOn){
+        oilFragment.update(isOn, null);
+    }
+
+    public void updateEngineDetails(){
+        if(engine == null)return;
+
+        String details = null;
+        if(engine.isRunning()){
+            details = "Started on " + Utils.formatDate(engine.getLastOn(), "dd/MM/yyyy HH:mm");
+            details += " (running for " + Utils.formatDuration(engine.getRunningDuration(), Utils.DurationFormat.D_H_M_S) + ")";
+        } else {
+            details = "Last ran on " + Utils.formatDate(engine.getLastOff(), "dd/MM/yyyy HH:mm") + " for " + Utils.formatDuration(engine.getRunningDuration(), Utils.DurationFormat.D_H_M_S);
+        }
+
+        TextView tv = contentView.findViewById(R.id.engineDetails);
+        tv.setText(details);
+
+        setName(engineName + (engine.isRunning() ? " (Running)" : ""));
+    }
+
+    public void updateUI(){ //this is to be called by activity onTimer
+        updateEngineDetails();
     }
 }

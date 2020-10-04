@@ -31,6 +31,7 @@ public class LinearScaleFragment extends Fragment {
     List<Integer> thresholdValues = new ArrayList();
     List<Integer> thresholdColours = new ArrayList();
     String name;
+    boolean scaleWidth = true;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -97,7 +98,9 @@ public class LinearScaleFragment extends Fragment {
     }
 
     public void updateValue(int value){
-        int lsMaxWidth = contentView.findViewById(R.id.lsScaleBorder).getWidth();
+        View scaleBorder = contentView.findViewById(R.id.lsScaleBorder);
+        int lsMax = scaleWidth ? scaleBorder.getWidth() : scaleBorder.getHeight();
+
         double scale = 0;
         if(value <= minValue){
             scale = 0;
@@ -107,8 +110,13 @@ public class LinearScaleFragment extends Fragment {
             scale = (double)(value - minValue) / (double)maxValue;
         }
 
-        int width = (int)(scale*(double)lsMaxWidth);
-        linearScaleView.getLayoutParams().width = width;
+        int dim = (int)(scale*(double)lsMax);
+        ViewGroup.LayoutParams layoutParams = linearScaleView.getLayoutParams();
+        if(scaleWidth){
+            layoutParams.width = dim;
+        } else {
+            layoutParams.height = dim;
+        }
         linearScaleView.invalidate();
         linearScaleView.requestLayout();
 
@@ -122,8 +130,8 @@ public class LinearScaleFragment extends Fragment {
         GradientDrawable gd = (GradientDrawable)linearScaleView.getDrawable();
         gd.setColor(colour);
 
-        linearScaleView.setVisibility(width > 0 ? View.VISIBLE: View.INVISIBLE);
+        linearScaleView.setVisibility(dim > 0 ? View.VISIBLE: View.INVISIBLE);
 
-        valueView.setText(value + "");
+        valueView.setText(value == 0 ? "" : value + "");
     }
 }

@@ -38,6 +38,7 @@ public class MainActivity extends GenericActivity {
     IndicatorFragment pompaCelupFragment;
 
     EngineFragment genset1;
+    EngineFragment genset2;
 
     Observer dataLoadProgress  = obj -> {
         WebserviceViewModel.LoadProgress progress = (WebserviceViewModel.LoadProgress) obj;
@@ -123,9 +124,16 @@ public class MainActivity extends GenericActivity {
         genset1 = (EngineFragment)getSupportFragmentManager().findFragmentById(R.id.genset1);
         genset1.setEngineID("gs1");
         genset1.setName("Genset 1");
-        genset1.setMaxRPM(2500);
+        genset1.setMaxRPM(2200);
         genset1.setRPMThresholds(1600, 1700);
         genset1.setTempThresholds(60, 80);
+
+        genset2 = (EngineFragment)getSupportFragmentManager().findFragmentById(R.id.genset2);
+        genset2.setEngineID("gs2");
+        genset2.setName("Genset 2");
+        genset2.setMaxRPM(2200);
+        genset2.setRPMThresholds(1600, 1700);
+        genset2.setTempThresholds(60, 80);
     }
 
     @Override
@@ -133,6 +141,8 @@ public class MainActivity extends GenericActivity {
         //PompaCelup pc = engineRoomModel.getPompaCelup().getValue();
         //if(pc != null)updatePompaCelup(pc);
 
+        genset1.updateUI();
+        genset2.updateUI();
 
         return super.onTimer();
     }

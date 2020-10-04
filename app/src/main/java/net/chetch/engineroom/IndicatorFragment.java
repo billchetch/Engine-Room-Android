@@ -74,6 +74,8 @@ public class IndicatorFragment extends Fragment {
         gd.setColor(indicatorColour);
 
         TextView tv = contentView.findViewById(R.id.indicatorDetails);
-        tv.setText(details == null ? "" : details);
+        if(tv != null) {
+            tv.setText(details == null ? "" : details);
+        }
     }
 }

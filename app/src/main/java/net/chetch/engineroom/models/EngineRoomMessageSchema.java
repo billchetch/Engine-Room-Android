@@ -1,8 +1,10 @@
 package net.chetch.engineroom.models;
 
+import net.chetch.engineroom.data.OilSensor;
 import net.chetch.engineroom.data.RPMCounter;
 import net.chetch.engineroom.data.PompaCelup;
 import net.chetch.engineroom.data.TemperatureSensor;
+import net.chetch.engineroom.data.Engine;
 import net.chetch.messaging.MessageSchema;
 import net.chetch.messaging.Message;
 
@@ -15,15 +17,13 @@ public class EngineRoomMessageSchema extends MessageSchema {
 
     static public final String DEVICE_ID_KEY = "DeviceID";
     static public final String DEVICE_NAME_KEY = "DeviceName";
+    static public final String ENGINE_KEY = "Engine";
     static public final String COMMAND_TEST = "test";
 
     static public final String RPM_NAME = "RPM";
     static public final String TEMP_ARRAY_NAME = "DS18B20";
+    static public final String OIL_SENSOR_NAME = "OIL";
     static public final String POMPA_CELUP_ID = "pmp_clp";
-    static public final String GENSET1_RPM_ID = "gs1_rpm";
-    static public final String GENSET2_RPM_ID = "gs2_rpm";
-    static public final String INDUK_RPM_ID = "idk_rpm";
-    static public final String BANTU_RP_ID = "bnt_rpm";
 
 
     public EngineRoomMessageSchema(Message message){
@@ -65,5 +65,27 @@ public class EngineRoomMessageSchema extends MessageSchema {
             }
         }
         return sensors;
+    }
+
+    public OilSensor getOilSensor(){
+        if(message.hasValue(DEVICE_ID_KEY)){
+            OilSensor os = new OilSensor(message.getString(DEVICE_ID_KEY));
+            os.setState(message.getBoolean("State"));
+            return os;
+        } else {
+            return null;
+        }
+    }
+
+    public Engine getEngine(){
+        if(message.hasValue(ENGINE_KEY)){
+            Engine engine = new Engine(message.getString(ENGINE_KEY));
+            engine.setRunning(message.getBoolean("EngineRunning"));
+            engine.setLastOn(message.getCalendar("EngineLastOn"));
+            engine.setLastOff(message.getCalendar("EngineLastOff"));
+            return engine;
+        } else {
+            return null;
+        }
     }
 }

@@ -50,6 +50,11 @@ public class EngineRoomMessagingModel extends MessagingViewModel {
             List<TemperatureSensor> sensors = schema.getTemperatureSensors();
             for(TemperatureSensor sensor : sensors){
                 liveDataTemperatureSensor.postValue(sensor);
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
     };

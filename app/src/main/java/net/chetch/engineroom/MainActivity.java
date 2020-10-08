@@ -125,14 +125,14 @@ public class MainActivity extends GenericActivity {
         genset1.setEngineID("gs1");
         genset1.setName("Genset 1");
         genset1.setMaxRPM(2200);
-        genset1.setRPMThresholds(1600, 1700);
+        genset1.setRPMThresholds(1500, 1600,1700);
         genset1.setTempThresholds(60, 80);
 
         genset2 = (EngineFragment)getSupportFragmentManager().findFragmentById(R.id.genset2);
         genset2.setEngineID("gs2");
         genset2.setName("Genset 2");
         genset2.setMaxRPM(2200);
-        genset2.setRPMThresholds(1600, 1700);
+        genset2.setRPMThresholds(1500, 1600,1700);
         genset2.setTempThresholds(60, 80);
     }
 

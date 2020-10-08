@@ -15,6 +15,7 @@ import net.chetch.utilities.Utils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 
@@ -38,6 +39,12 @@ public class EngineFragment extends Fragment {
 
         rpmFragment = (LinearScaleFragment)getChildFragmentManager().findFragmentById(R.id.rpmFragment);
         rpmFragment.setName("RPM");
+        rpmFragment.setThresholdColours(
+                ContextCompat.getColor(getContext(), R.color.bluegreen2),
+                ContextCompat.getColor(getContext(), R.color.bluegreen),
+                ContextCompat.getColor(getContext(), R.color.age2),
+                ContextCompat.getColor(getContext(), R.color.age4));
+
         tempFragment = (LinearScaleFragment)getChildFragmentManager().findFragmentById(R.id.tempFragment);
         tempFragment.setName("Temp");
 
@@ -100,8 +107,8 @@ public class EngineFragment extends Fragment {
     public void setMaxRPM(int maxRPM){
         rpmFragment.setLimits(0, maxRPM);
     }
-    public void setRPMThresholds(int warn, int danger){
-        rpmFragment.setThresholdValues(warn, danger);
+    public void setRPMThresholds(int sweetSpot, int warn, int danger){
+        rpmFragment.setThresholdValues(sweetSpot, warn, danger);
     }
     public void updateRPM(int rpm){
         rpmFragment.updateValue(rpm);

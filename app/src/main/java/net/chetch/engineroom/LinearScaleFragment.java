@@ -81,12 +81,14 @@ public class LinearScaleFragment extends Fragment {
     }
 
     public void setThresholdValues(int ... thresholds){
+        thresholdValues.clear();
         for(int i : thresholds){
             thresholdValues.add(i);
         }
     }
 
     public void setThresholdColours(int ... colours){
+        thresholdColours.clear();
         for(int c : colours){
             thresholdColours.add(c);
         }

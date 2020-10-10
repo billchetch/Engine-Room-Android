@@ -6,54 +6,54 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/engineName"
-        android:layout_width="wrap_content"
+    <fragment
+        android:id="@+id/engineTitleFragment"
+        android:name="net.chetch.engineroom.IndicatorFragment"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Engine Name"
-        android:textSize="20sp"
-        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <fragment
-        android:id="@+id/rpmFragment"
-        android:name="net.chetch.engineroom.LinearScaleFragment"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/engineDataLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="16dp"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/engineDetails" />
+        app:layout_constraintTop_toBottomOf="@+id/engineTitleFragment">
 
-    <fragment
-        android:id="@+id/tempFragment"
-        android:name="net.chetch.engineroom.LinearScaleFragment"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/rpmFragment" />
+        <fragment
+            android:id="@+id/rpmFragment"
+            android:name="net.chetch.engineroom.LinearScaleFragment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <fragment
-        android:id="@+id/oilFragment"
-        android:name="net.chetch.engineroom.IndicatorFragment"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        app:small_indicator="true"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tempFragment" />
+        <fragment
+            android:id="@+id/tempFragment"
+            android:name="net.chetch.engineroom.LinearScaleFragment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/rpmFragment" />
 
-    <TextView
-        android:id="@+id/engineDetails"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:text="Not yet ran"
-        android:textStyle="italic"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/engineName" />
+        <fragment
+            android:id="@+id/oilFragment"
+            android:name="net.chetch.engineroom.IndicatorFragment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:indicator_size="small"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tempFragment" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

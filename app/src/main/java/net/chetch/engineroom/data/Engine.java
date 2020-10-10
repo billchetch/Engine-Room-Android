@@ -13,6 +13,10 @@ public class Engine extends DataObject {
         return getCasted("engine_id");
     }
 
+
+    public void setOnline(boolean online){
+        setValue("online", online);
+    }
     public void setRunning(boolean running){
         setValue("running", running);
     }
@@ -24,6 +28,7 @@ public class Engine extends DataObject {
         setValue("last_off", cal);
     }
 
+    public boolean isOnline(){ return getCasted("online"); }
     public boolean isRunning(){ return getCasted("running"); }
     public Calendar getLastOn(){ return getCasted("last_on"); }
     public Calendar getLastOff(){ return getCasted("last_off"); }

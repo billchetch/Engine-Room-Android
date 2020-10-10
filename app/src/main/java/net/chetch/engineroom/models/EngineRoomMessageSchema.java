@@ -18,7 +18,11 @@ public class EngineRoomMessageSchema extends MessageSchema {
     static public final String DEVICE_ID_KEY = "DeviceID";
     static public final String DEVICE_NAME_KEY = "DeviceName";
     static public final String ENGINE_KEY = "Engine";
+
     static public final String COMMAND_TEST = "test";
+    static public final String COMMAND_LIST_ENGINES = "list-engines";
+    static public final String COMMAND_ENGINE_STATUS = "engine-status";
+    static public final String COMMAND_SET_ENGINE_ONLINE = "engine-online";
 
     static public final String RPM_NAME = "RPM";
     static public final String TEMP_ARRAY_NAME = "DS18B20";
@@ -80,6 +84,7 @@ public class EngineRoomMessageSchema extends MessageSchema {
     public Engine getEngine(){
         if(message.hasValue(ENGINE_KEY)){
             Engine engine = new Engine(message.getString(ENGINE_KEY));
+            engine.setOnline(message.getBoolean("EngineOnline"));
             engine.setRunning(message.getBoolean("EngineRunning"));
             engine.setLastOn(message.getCalendar("EngineLastOn"));
             engine.setLastOff(message.getCalendar("EngineLastOff"));

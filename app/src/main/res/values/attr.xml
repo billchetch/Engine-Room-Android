@@ -2,6 +2,6 @@
 <resources>
     <declare-styleable name="IndicatorFragment">
         <attr name="indicator_name" format="string"/>
-        <attr name="small_indicator" format="boolean"/>
+        <attr name="indicator_size" format="string"/>
     </declare-styleable>
 </resources>

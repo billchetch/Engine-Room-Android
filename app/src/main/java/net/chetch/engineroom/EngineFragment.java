@@ -3,6 +3,7 @@ package net.chetch.engineroom;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -13,6 +14,9 @@ import net.chetch.engineroom.data.Engine;
 import net.chetch.engineroom.models.EngineRoomMessagingModel;
 import net.chetch.utilities.Utils;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -20,12 +24,16 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 
 public class EngineFragment extends Fragment {
+    static final int MENU_ITEM_ONLINE = 1;
+    static final int MENU_ITEM_OFFLINE = 2;
+
     EngineRoomMessagingModel model;
 
     String engineID;
     String engineName;
     Engine engine;
     View contentView;
+    IndicatorFragment titleFragment;
     LinearScaleFragment rpmFragment;
     LinearScaleFragment tempFragment;
     IndicatorFragment oilFragment;
@@ -36,6 +44,33 @@ public class EngineFragment extends Fragment {
 
         // Inflate the layout for this fragment
         contentView = inflater.inflate(R.layout.engine, container, false);
+
+        titleFragment = (IndicatorFragment) getChildFragmentManager().findFragmentById(R.id.engineTitleFragment);
+        Map<IndicatorFragment.State, Map<Integer, String>> menuItems = new HashMap<>();
+
+        Map<Integer, String> online = new HashMap<>();
+        online.put(MENU_ITEM_ONLINE, "Bring engine online");
+
+        Map<Integer, String> offline = new HashMap<>();
+        offline.put(MENU_ITEM_OFFLINE, "Take engine offline");
+
+        menuItems.put(IndicatorFragment.State.DISABLED, online);
+        menuItems.put(IndicatorFragment.State.OFF, offline);
+        menuItems.put(IndicatorFragment.State.ON, offline);
+
+        MenuItem.OnMenuItemClickListener selectMenuItem = (item) -> {
+            switch(item.getItemId()){
+                case MENU_ITEM_OFFLINE:
+                    model.setEngineOnline(engineID,false);
+                    return true;
+                case MENU_ITEM_ONLINE:
+                    model.setEngineOnline(engineID,true);
+                    return true;
+            }
+            return true;
+        };
+
+        titleFragment.setContextMenu(menuItems, selectMenuItem);
 
         rpmFragment = (LinearScaleFragment)getChildFragmentManager().findFragmentById(R.id.rpmFragment);
         rpmFragment.setName("RPM");
@@ -62,19 +97,19 @@ public class EngineFragment extends Fragment {
             model = ViewModelProviders.of(getActivity()).get(EngineRoomMessagingModel.class);
 
             model.getRPMCounter().observe(getViewLifecycleOwner(), rpm->{
-               if(isEngineForDevice(rpm.getDeviceID())){
-                    updateRPM((int)rpm.getAverageRPM());
+               if(isEngineForDevice(rpm.getDeviceID()) && engine != null && engine.isOnline()){
+                   updateRPM((int) rpm.getAverageRPM());
                }
             });
 
             model.getTemperatureSensor().observe(getViewLifecycleOwner(), sensor->{
-                if(isEngineForDevice(sensor.sensorID)){
+                if(isEngineForDevice(sensor.sensorID) && engine != null && engine.isOnline()){
                     updateTemp(sensor.temperature.intValue());
                 }
             });
 
             model.getOilSensor().observe(getViewLifecycleOwner(), sensor->{
-                if(isEngineForDevice(sensor.getDeviceID())){
+                if(isEngineForDevice(sensor.getDeviceID()) && engine != null && engine.isOnline()){
                     updateOilSensor(sensor.isOn());
                 }
             });
@@ -100,8 +135,7 @@ public class EngineFragment extends Fragment {
     public void setName(String name){
         if(engineName == null)engineName = name;
 
-        TextView tv = contentView.findViewById(R.id.engineName);
-        tv.setText(name);
+        titleFragment.setName(engineName);
     }
 
     public void setMaxRPM(int maxRPM){
@@ -133,13 +167,24 @@ public class EngineFragment extends Fragment {
             details = "Started on " + Utils.formatDate(engine.getLastOn(), "dd/MM/yyyy HH:mm");
             details += " (running for " + Utils.formatDuration(engine.getRunningDuration(), Utils.DurationFormat.D_H_M_S) + ")";
         } else {
-            details = "Last ran on " + Utils.formatDate(engine.getLastOff(), "dd/MM/yyyy HH:mm") + " for " + Utils.formatDuration(engine.getRunningDuration(), Utils.DurationFormat.D_H_M_S);
+            if(engine.isOnline()) {
+                details = "Last ran on " + Utils.formatDate(engine.getLastOn(), "dd/MM/yyyy HH:mm") + " for " + Utils.formatDuration(engine.getRunningDuration(), Utils.DurationFormat.D_H_M_S);
+            } else {
+                details = "Engine is offline";
+            }
+         }
+
+        titleFragment.setName(engineName + (engine.isRunning() ? " (Running)" : ""));
+        IndicatorFragment.State state;
+        View edv = contentView.findViewById(R.id.engineDataLayout);
+        if(engine.isOnline()){
+            state = engine.isRunning() ? IndicatorFragment.State.ON : IndicatorFragment.State.OFF;
+            edv.setVisibility(View.VISIBLE);
+        } else {
+            state = IndicatorFragment.State.DISABLED;
+            edv.setVisibility(View.GONE);
         }
-
-        TextView tv = contentView.findViewById(R.id.engineDetails);
-        tv.setText(details);
-
-        setName(engineName + (engine.isRunning() ? " (Running)" : ""));
+        titleFragment.update(state, details);
     }
 
     public void updateUI(){ //this is to be called by activity onTimer

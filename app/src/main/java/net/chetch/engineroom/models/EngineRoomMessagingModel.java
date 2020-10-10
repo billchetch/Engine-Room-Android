@@ -9,7 +9,11 @@ import net.chetch.engineroom.data.TemperatureSensor;
 import net.chetch.engineroom.data.Engine;
 import net.chetch.messaging.Message;
 import net.chetch.messaging.MessagingViewModel;
+import net.chetch.messaging.filters.CommandResponseFilter;
+import net.chetch.messaging.filters.DataFilter;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +22,27 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 public class EngineRoomMessagingModel extends MessagingViewModel {
+    public CommandResponseFilter onEngineStatus = new CommandResponseFilter(EngineRoomMessageSchema.SERVICE_NAME, EngineRoomMessageSchema.COMMAND_ENGINE_STATUS){
+        @Override
+        protected void onMatched(Message message) {
+            EngineRoomMessageSchema schema = new EngineRoomMessageSchema(message);
+            Engine engine = schema.getEngine();
+            if(engine != null){
+                liveDataEngine.postValue(engine);
+            }
+        }
+    };
+
+    public CommandResponseFilter onEngineOnline = new CommandResponseFilter(EngineRoomMessageSchema.SERVICE_NAME, EngineRoomMessageSchema.COMMAND_SET_ENGINE_ONLINE){
+        @Override
+        protected void onMatched(Message message) {
+            EngineRoomMessageSchema schema = new EngineRoomMessageSchema(message);
+            Engine engine = schema.getEngine();
+            if(engine != null){
+                liveDataEngine.postValue(engine);
+            }
+        }
+    };
 
     public DeviceIDDataFilter onPompaCelup = new DeviceIDDataFilter(EngineRoomMessageSchema.POMPA_CELUP_ID){
         @Override
@@ -75,10 +100,14 @@ public class EngineRoomMessagingModel extends MessagingViewModel {
     MutableLiveData<OilSensor> liveDataOilSensor = new MutableLiveData<>();
     MutableLiveData<Engine> liveDataEngine = new MutableLiveData<>();
 
+    List<String> engineIDs = new ArrayList<>();
+
     public EngineRoomMessagingModel(){
         super();
 
         try {
+            addMessageFilter(onEngineStatus);
+            addMessageFilter(onEngineOnline);
             addMessageFilter(onPompaCelup);
             addMessageFilter(onRPM);
             addMessageFilter(onTempArray);
@@ -88,18 +117,23 @@ public class EngineRoomMessagingModel extends MessagingViewModel {
         }
     }
 
-    public void sendCommand(String commandName){
-        getClient().sendCommand(EngineRoomMessageSchema.SERVICE_NAME, commandName);
+    public void sendCommand(String commandName, Object ... args){
+        getClient().sendCommand(EngineRoomMessageSchema.SERVICE_NAME, commandName, args);
     }
 
     @Override
     public void onClientConnected() {
         super.onClientConnected();
 
-        //sendCommand(EngineRoomMessageSchema.COMMAND_TEST);
+        for(String engineID : engineIDs) {
+            sendCommand(EngineRoomMessageSchema.COMMAND_ENGINE_STATUS, engineID);
+        }
         Log.i("ERMM", "Client connected");
     }
 
+    public void addEngine(String engineID){
+        if(!engineIDs.contains(engineID))engineIDs.add(engineID);
+    }
 
     public LiveData<PompaCelup> getPompaCelup(){
         return liveDataPompaCelup;
@@ -115,5 +149,9 @@ public class EngineRoomMessagingModel extends MessagingViewModel {
     }
     public LiveData<Engine> getEngine(){
         return liveDataEngine;
+    }
+
+    public void setEngineOnline(String engineID, boolean online){
+        sendCommand(EngineRoomMessageSchema.COMMAND_SET_ENGINE_ONLINE, engineID, online);
     }
 }

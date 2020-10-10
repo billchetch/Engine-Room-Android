@@ -89,6 +89,8 @@ public class MainActivity extends GenericActivity {
         engineRoomModel.getError().observe(this, throwable -> {
             showError(throwable);
         });
+        engineRoomModel.addEngine("gs1");
+        engineRoomModel.addEngine("gs2");
         engineRoomModel.loadData(dataLoadProgress);
         ConstraintLayout mainLayout = findViewById(R.id.erMainLayout);
         mainLayout.setVisibility(View.INVISIBLE);
@@ -124,16 +126,16 @@ public class MainActivity extends GenericActivity {
         genset1 = (EngineFragment)getSupportFragmentManager().findFragmentById(R.id.genset1);
         genset1.setEngineID("gs1");
         genset1.setName("Genset 1");
-        genset1.setMaxRPM(2200);
+        genset1.setMaxRPM(2000);
         genset1.setRPMThresholds(1500, 1600,1700);
-        genset1.setTempThresholds(60, 80);
+        genset1.setTempThresholds(50, 60);
 
         genset2 = (EngineFragment)getSupportFragmentManager().findFragmentById(R.id.genset2);
         genset2.setEngineID("gs2");
         genset2.setName("Genset 2");
-        genset2.setMaxRPM(2200);
+        genset2.setMaxRPM(2000);
         genset2.setRPMThresholds(1500, 1600,1700);
-        genset2.setTempThresholds(60, 80);
+        genset2.setTempThresholds(50, 60);
     }
 
     @Override

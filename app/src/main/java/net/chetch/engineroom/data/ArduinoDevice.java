@@ -11,4 +11,9 @@ public class ArduinoDevice extends DataObject {
     public String getDeviceID(){
         return getCasted("device_id");
     }
+
+    public void setEnabled(boolean enabled){
+        setValue("enabled", enabled);
+    }
+    public boolean isEnabled(){ return getCasted("enabled"); }
 }

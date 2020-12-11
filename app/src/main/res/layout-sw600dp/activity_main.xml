@@ -58,7 +58,7 @@
         tools:layout_editor_absoluteX="0dp">
 
         <fragment
-            android:id="@+id/pompaCelupFragment"
+            android:id="@+id/pompaCelup"
             android:name="net.chetch.engineroom.IndicatorFragment"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -74,7 +74,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/pompaCelupFragment" />
+            app:layout_constraintTop_toBottomOf="@+id/pompaCelup" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

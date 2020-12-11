@@ -2,7 +2,7 @@ package net.chetch.engineroom.models;
 
 import net.chetch.engineroom.data.OilSensor;
 import net.chetch.engineroom.data.RPMCounter;
-import net.chetch.engineroom.data.PompaCelup;
+import net.chetch.engineroom.data.Pump;
 import net.chetch.engineroom.data.TemperatureSensor;
 import net.chetch.engineroom.data.Engine;
 import net.chetch.messaging.MessageSchema;
@@ -22,12 +22,17 @@ public class EngineRoomMessageSchema extends MessageSchema {
     static public final String COMMAND_TEST = "test";
     static public final String COMMAND_LIST_ENGINES = "list-engines";
     static public final String COMMAND_ENGINE_STATUS = "engine-status";
-    static public final String COMMAND_SET_ENGINE_ONLINE = "engine-online";
+    static public final String COMMAND_ENABLE_ENGINE = "enable-engine";
+    static public final String COMMAND_PUMP_STATUS = "pump-status";
+    static public final String COMMAND_ENABLE_PUMP = "enable-pump";
 
     static public final String RPM_NAME = "RPM";
     static public final String TEMP_ARRAY_NAME = "DS18B20";
     static public final String OIL_SENSOR_NAME = "OIL";
     static public final String POMPA_CELUP_ID = "pmp_clp";
+    static public final String POMPA_SOLAR_ID = "pmp_sol";
+    static public final String PUMP_NAME = "PUMP";
+
 
 
     public EngineRoomMessageSchema(Message message){
@@ -35,13 +40,14 @@ public class EngineRoomMessageSchema extends MessageSchema {
     }
 
 
-    public PompaCelup getPompaCelup(){
+    public Pump getPump(){
         if(message.hasValue(DEVICE_ID_KEY)){
-            PompaCelup pc = new PompaCelup(message.getString(DEVICE_ID_KEY));
-            pc.setState(message.getBoolean("State"));
-            pc.setLastOn(message.getCalendar("LastOn"));
-            pc.setLastOff(message.getCalendar("LastOff"));
-            return pc;
+            Pump pmp = new Pump(message.getString(DEVICE_ID_KEY));
+            pmp.setState(message.getBoolean("State"));
+            pmp.setEnabled(message.getBoolean("Enabled"));
+            pmp.setLastOn(message.getCalendar("LastOn"));
+            pmp.setLastOff(message.getCalendar("LastOff"));
+            return pmp;
         } else {
             return null;
         }
@@ -71,6 +77,13 @@ public class EngineRoomMessageSchema extends MessageSchema {
         return sensors;
     }
 
+    public TemperatureSensor getTemperatureSensor(){
+        TemperatureSensor ts = new TemperatureSensor();
+        ts.sensorID = message.getString("SensorID");
+        ts.temperature = message.getDouble("Temperature");
+        return ts;
+    }
+
     public OilSensor getOilSensor(){
         if(message.hasValue(DEVICE_ID_KEY)){
             OilSensor os = new OilSensor(message.getString(DEVICE_ID_KEY));
@@ -84,10 +97,13 @@ public class EngineRoomMessageSchema extends MessageSchema {
     public Engine getEngine(){
         if(message.hasValue(ENGINE_KEY)){
             Engine engine = new Engine(message.getString(ENGINE_KEY));
-            engine.setOnline(message.getBoolean("EngineOnline"));
+            engine.setEnabled(message.getBoolean("EngineEnabled"));
             engine.setRunning(message.getBoolean("EngineRunning"));
             engine.setLastOn(message.getCalendar("EngineLastOn"));
             engine.setLastOff(message.getCalendar("EngineLastOff"));
+            engine.setRPMID(message.getString("RPMDeviceID"));
+            engine.setOilSensorID(message.getString("OilSensorDeviceID"));
+            engine.setTempSensorID(message.getString("TempSensorID"));
             return engine;
         } else {
             return null;

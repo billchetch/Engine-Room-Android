@@ -14,8 +14,8 @@ public class Engine extends DataObject {
     }
 
 
-    public void setOnline(boolean online){
-        setValue("online", online);
+    public void setEnabled(boolean enabled){
+        setValue("enabled", enabled);
     }
     public void setRunning(boolean running){
         setValue("running", running);
@@ -28,7 +28,7 @@ public class Engine extends DataObject {
         setValue("last_off", cal);
     }
 
-    public boolean isOnline(){ return getCasted("online"); }
+    public boolean isEnabled(){ return getCasted("enabled"); }
     public boolean isRunning(){ return getCasted("running"); }
     public Calendar getLastOn(){ return getCasted("last_on"); }
     public Calendar getLastOff(){ return getCasted("last_off"); }
@@ -43,4 +43,14 @@ public class Engine extends DataObject {
             return useMillis - getLastOn().getTimeInMillis();
         }
     }
+
+    public String getRPMID(){ return getCasted("rpm_id"); }
+    public void setRPMID(String id){ setValue("rpm_id", id); }
+
+    public String getOilSensorID(){ return getCasted("oil_sensor_id"); }
+    public void setOilSensorID(String id){ setValue("oil_sensor_id", id); }
+
+    public String getTempSensorID(){ return getCasted("temp_sensor_id"); }
+    public void setTempSensorID(String id){ setValue("temp_sensor_id", id); }
+
 }

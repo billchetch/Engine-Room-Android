@@ -32,6 +32,7 @@ public class LinearScaleFragment extends Fragment {
     List<Integer> thresholdColours = new ArrayList();
     String name;
     boolean scaleWidth = true;
+    public String valueFormat = "%.1f";
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -99,7 +100,7 @@ public class LinearScaleFragment extends Fragment {
         tv.setText(name);
     }
 
-    public void updateValue(int value){
+    public void updateValue(double value){
         View scaleBorder = contentView.findViewById(R.id.lsScaleBorder);
         int lsMax = scaleWidth ? scaleBorder.getWidth() : scaleBorder.getHeight();
 
@@ -134,6 +135,7 @@ public class LinearScaleFragment extends Fragment {
 
         linearScaleView.setVisibility(dim > 0 ? View.VISIBLE: View.INVISIBLE);
 
-        valueView.setText(value == 0 ? "" : value + "");
+        String sv = String.format(valueFormat, value);
+        valueView.setText(value == 0 ? "" : sv);
     }
 }

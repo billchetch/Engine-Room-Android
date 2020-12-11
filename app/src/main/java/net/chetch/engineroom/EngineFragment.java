@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import net.chetch.cmalarms.models.AlarmsMessagingModel;
 import net.chetch.engineroom.data.Engine;
+import net.chetch.engineroom.models.EngineRoomMessageSchema;
 import net.chetch.engineroom.models.EngineRoomMessagingModel;
 import net.chetch.utilities.Utils;
 
@@ -24,9 +25,6 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 
 public class EngineFragment extends Fragment {
-    static final int MENU_ITEM_ONLINE = 1;
-    static final int MENU_ITEM_OFFLINE = 2;
-
     EngineRoomMessagingModel model;
 
     String engineID;
@@ -46,31 +44,20 @@ public class EngineFragment extends Fragment {
         contentView = inflater.inflate(R.layout.engine, container, false);
 
         titleFragment = (IndicatorFragment) getChildFragmentManager().findFragmentById(R.id.engineTitleFragment);
-        Map<IndicatorFragment.State, Map<Integer, String>> menuItems = new HashMap<>();
-
-        Map<Integer, String> online = new HashMap<>();
-        online.put(MENU_ITEM_ONLINE, "Bring engine online");
-
-        Map<Integer, String> offline = new HashMap<>();
-        offline.put(MENU_ITEM_OFFLINE, "Take engine offline");
-
-        menuItems.put(IndicatorFragment.State.DISABLED, online);
-        menuItems.put(IndicatorFragment.State.OFF, offline);
-        menuItems.put(IndicatorFragment.State.ON, offline);
 
         MenuItem.OnMenuItemClickListener selectMenuItem = (item) -> {
             switch(item.getItemId()){
-                case MENU_ITEM_OFFLINE:
-                    model.setEngineOnline(engineID,false);
+                case IndicatorFragment.MENU_ITEM_DISABLE:
+                    model.enableEngine(engineID, false);
                     return true;
-                case MENU_ITEM_ONLINE:
-                    model.setEngineOnline(engineID,true);
+                case IndicatorFragment.MENU_ITEM_ENABLE:
+                    model.enableEngine(engineID, true);
                     return true;
             }
             return true;
         };
 
-        titleFragment.setContextMenu(menuItems, selectMenuItem);
+        titleFragment.setContextMenu(selectMenuItem);
 
         rpmFragment = (LinearScaleFragment)getChildFragmentManager().findFragmentById(R.id.rpmFragment);
         rpmFragment.setName("RPM");
@@ -90,32 +77,32 @@ public class EngineFragment extends Fragment {
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
 
         if(model == null) {
             model = ViewModelProviders.of(getActivity()).get(EngineRoomMessagingModel.class);
 
-            model.getRPMCounter().observe(getViewLifecycleOwner(), rpm->{
-               if(isEngineForDevice(rpm.getDeviceID()) && engine != null && engine.isOnline()){
+            model.getRPMCounter(engineID + "_rpm").observe(getViewLifecycleOwner(), rpm->{
+               if(engine != null && engine.isEnabled()){
                    updateRPM((int) rpm.getAverageRPM());
                }
             });
 
-            model.getTemperatureSensor().observe(getViewLifecycleOwner(), sensor->{
-                if(isEngineForDevice(sensor.sensorID) && engine != null && engine.isOnline()){
-                    updateTemp(sensor.temperature.intValue());
+            model.getTemperatureSensor(engineID + "_temp").observe(getViewLifecycleOwner(), sensor->{
+                if(engine != null && engine.isEnabled()){
+                    updateTemp(sensor.temperature);
                 }
             });
 
-            model.getOilSensor().observe(getViewLifecycleOwner(), sensor->{
-                if(isEngineForDevice(sensor.getDeviceID()) && engine != null && engine.isOnline()){
+            model.getOilSensor(engineID + "_oil").observe(getViewLifecycleOwner(), sensor->{
+                if(engine != null && engine.isEnabled()){
                     updateOilSensor(sensor.isOn());
                 }
             });
 
-            model.getEngine().observe(getViewLifecycleOwner(), eng->{
-                if(engineID != null && engineID.equals(eng.getEngineID())){
+            model.getEngine(engineID).observe(getViewLifecycleOwner(), eng->{
+                if(eng != null){
                     engine  = eng;
                     updateEngineDetails();
                 }
@@ -123,10 +110,7 @@ public class EngineFragment extends Fragment {
         }
     }
 
-    private boolean isEngineForDevice(String deviceID){
-        String[] parts = deviceID.split("_");
-        return parts.length >= 2 && parts[0].equals(engineID);
-    }
+
 
     public void setEngineID(String engineID){
         this.engineID = engineID;
@@ -151,7 +135,7 @@ public class EngineFragment extends Fragment {
         tempFragment.setThresholdValues(warn, danger);
     }
 
-    public void updateTemp(int temp){
+    public void updateTemp(double temp){
         tempFragment.updateValue(temp);
     }
 
@@ -164,11 +148,15 @@ public class EngineFragment extends Fragment {
 
         String details = null;
         if(engine.isRunning()){
-            details = "Started on " + Utils.formatDate(engine.getLastOn(), "dd/MM/yyyy HH:mm");
+            details = "Started on " + Utils.formatDate(engine.getLastOn(), "dd MMM @ HH:mm");
             details += " (running for " + Utils.formatDuration(engine.getRunningDuration(), Utils.DurationFormat.D_H_M_S) + ")";
         } else {
-            if(engine.isOnline()) {
-                details = "Last ran on " + Utils.formatDate(engine.getLastOn(), "dd/MM/yyyy HH:mm") + " for " + Utils.formatDuration(engine.getRunningDuration(), Utils.DurationFormat.D_H_M_S);
+            if(engine.isEnabled()) {
+                if(engine.getLastOn() != null && engine.getLastOff() != null) {
+                    details = "Last ran from " + Utils.formatDate(engine.getLastOn(), "dd MMM @ HH:mm") + " until " + Utils.formatDate(engine.getLastOff(), "dd MMM @ HH:mm:ss") + " and ran for " + Utils.formatDuration(engine.getRunningDuration(), Utils.DurationFormat.D_H_M_S);
+                } else {
+                    details = "Engine has never been run";
+                }
             } else {
                 details = "Engine is offline";
             }
@@ -177,13 +165,15 @@ public class EngineFragment extends Fragment {
         titleFragment.setName(engineName + (engine.isRunning() ? " (Running)" : ""));
         IndicatorFragment.State state;
         View edv = contentView.findViewById(R.id.engineDataLayout);
-        if(engine.isOnline()){
+        if(engine.isEnabled()){
             state = engine.isRunning() ? IndicatorFragment.State.ON : IndicatorFragment.State.OFF;
             edv.setVisibility(View.VISIBLE);
         } else {
             state = IndicatorFragment.State.DISABLED;
             edv.setVisibility(View.GONE);
         }
+        edv.invalidate();
+        edv.requestLayout();
         titleFragment.update(state, details);
     }
 

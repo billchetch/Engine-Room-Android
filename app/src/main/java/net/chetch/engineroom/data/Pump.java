@@ -5,8 +5,8 @@ import net.chetch.webservices.DataObject;
 
 import java.util.Calendar;
 
-public class PompaCelup extends SwitchSensor {
-    public PompaCelup(String deviceID){
+public class Pump extends SwitchSensor {
+    public Pump(String deviceID){
         super(deviceID);
     }
 }

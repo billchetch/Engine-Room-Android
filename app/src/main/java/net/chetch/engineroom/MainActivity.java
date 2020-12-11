@@ -1,6 +1,5 @@
 package net.chetch.engineroom;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
@@ -13,17 +12,13 @@ import android.widget.TextView;
 
 import net.chetch.appframework.GenericActivity;
 import net.chetch.cmalarms.models.AlarmsMessagingModel;
-import net.chetch.engineroom.data.PompaCelup;
+import net.chetch.engineroom.data.Pump;
+import net.chetch.engineroom.models.EngineRoomMessageSchema;
 import net.chetch.engineroom.models.EngineRoomMessagingModel;
 import net.chetch.messaging.MessagingViewModel;
 import net.chetch.utilities.Utils;
 import net.chetch.webservices.WebserviceViewModel;
 import net.chetch.webservices.network.NetworkRepository;
-
-import java.util.Dictionary;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
 
 public class MainActivity extends GenericActivity {
     public enum DisplayOrientation{
@@ -35,7 +30,8 @@ public class MainActivity extends GenericActivity {
 
     AlarmsMessagingModel alarmsModel;
     EngineRoomMessagingModel engineRoomModel;
-    IndicatorFragment pompaCelupFragment;
+    PumpFragment pompaCelupFragment;
+    PumpFragment pompaSolarFragment;
 
     EngineFragment genset1;
     EngineFragment genset2;
@@ -64,10 +60,11 @@ public class MainActivity extends GenericActivity {
         try {
             //String apiBaseURL = "http://192.168.43.123:8001/api/";
             //String apiBaseURL = "http://192.168.0.123:8001/api/";
-            String apiBaseURL = "http://192.168.0.150:8001/api/";
+            //String apiBaseURL = "http://192.168.0.150:8001/api/";
             //String apiBaseURL = "http://192.168.1.100:8001/api/";
             //String apiBaseURL = "http://192.168.0.106:8001/api/";
-            //String apiBaseURL = "http://192.168.0.52:8001/api/";
+            String apiBaseURL = "http://192.168.0.52:8001/api/";
+            //String apiBaseURL = "http://192.168.1.101:8001/api/";
             NetworkRepository.getInstance().setAPIBaseURL(apiBaseURL);
         } catch (Exception e) {
             Log.e("MVM", e.getMessage());
@@ -89,9 +86,7 @@ public class MainActivity extends GenericActivity {
         engineRoomModel.getError().observe(this, throwable -> {
             showError(throwable);
         });
-        engineRoomModel.addEngine("gs1");
-        engineRoomModel.addEngine("gs2");
-        engineRoomModel.loadData(dataLoadProgress);
+
         ConstraintLayout mainLayout = findViewById(R.id.erMainLayout);
         mainLayout.setVisibility(View.INVISIBLE);
         View progressCtn = findViewById(R.id.erProgressCtn);
@@ -113,14 +108,11 @@ public class MainActivity extends GenericActivity {
             }
         });
 
-        engineRoomModel.getPompaCelup().observe(this, pc->{
-            updatePompaCelup(pc);
-        });
-
-
-
-        pompaCelupFragment = (IndicatorFragment)getSupportFragmentManager().findFragmentById(R.id.pompaCelupFragment);
-        startTimer(5);
+        pompaCelupFragment = (PumpFragment)getSupportFragmentManager().findFragmentById(R.id.pompaCelup);
+        pompaCelupFragment.setPumpID(EngineRoomMessageSchema.POMPA_CELUP_ID);
+        pompaSolarFragment = (PumpFragment)getSupportFragmentManager().findFragmentById(R.id.pompaSolar);
+        pompaSolarFragment.setPumpID(EngineRoomMessageSchema.POMPA_SOLAR_ID);
+        startTimer(5); //for updating UI to show things like how much time has elapsed ...most UI though is event driven
 
         //initialise genset fragments
         genset1 = (EngineFragment)getSupportFragmentManager().findFragmentById(R.id.genset1);
@@ -136,6 +128,8 @@ public class MainActivity extends GenericActivity {
         genset2.setMaxRPM(2000);
         genset2.setRPMThresholds(1500, 1600,1700);
         genset2.setTempThresholds(50, 60);
+
+        engineRoomModel.loadData(dataLoadProgress);
     }
 
     @Override
@@ -143,23 +137,13 @@ public class MainActivity extends GenericActivity {
         //PompaCelup pc = engineRoomModel.getPompaCelup().getValue();
         //if(pc != null)updatePompaCelup(pc);
 
-        genset1.updateUI();
-        genset2.updateUI();
+        //genset1.updateUI();
+        //genset2.updateUI();
 
         return super.onTimer();
     }
 
-    private void updatePompaCelup(PompaCelup pc){
-        long duration = pc.getOnDuration();
-        String fduration = duration > 0 ? Utils.formatDuration(duration, Utils.DurationFormat.D_H_M_S) : "n/a";
-        String details = "";
-        if(pc.isOn()){
-            details = "Pumping started on  " + Utils.formatDate(pc.getLastOn(), "dd MMM, HH:mm:ss") + " (running time " + fduration + ")";
-        } else if(pc.getLastOn() != null){
-            details = "Last pumped on " + Utils.formatDate(pc.getLastOn(), "dd MMM, HH:mm:ss") + " (duration " + fduration + ")";
-        }
-        pompaCelupFragment.update(pc.getState(), details);
-    }
+
 
     @Override
     public void showError(Throwable t) {

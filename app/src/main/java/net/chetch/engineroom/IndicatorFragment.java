@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import androidx.annotation.NonNull;
@@ -21,7 +22,11 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-public class IndicatorFragment extends Fragment {
+public class IndicatorFragment extends Fragment implements MenuItem.OnMenuItemClickListener {
+    static final int MENU_ITEM_ENABLE = 1;
+    static final int MENU_ITEM_DISABLE = 2;
+    static final int MENU_ITEM_VIEW_STATS = 3;
+
     enum State{
         ON,
         OFF,
@@ -69,9 +74,23 @@ public class IndicatorFragment extends Fragment {
                 rid = R.layout.indicator_large; break;
         }
         contentView = inflater.inflate(rid, container, false);
-
-        registerForContextMenu(contentView);
         setName(indicatorName);
+
+        if(menuItems == null) {
+            menuItems = new HashMap<>();
+            Map<Integer, String> enable = new HashMap<>();
+            String name2use = indicatorName == null ? "" : " " + indicatorName;
+            enable.put(IndicatorFragment.MENU_ITEM_ENABLE, "Enable" + name2use);
+            enable.put(IndicatorFragment.MENU_ITEM_VIEW_STATS, "View" + name2use + " stats");
+
+            Map<Integer, String> disable = new HashMap<>();
+            disable.put(IndicatorFragment.MENU_ITEM_DISABLE, "Disable" + name2use);
+            disable.put(IndicatorFragment.MENU_ITEM_VIEW_STATS, "View" + name2use + " stats");
+
+            menuItems.put(IndicatorFragment.State.DISABLED, enable);
+            menuItems.put(IndicatorFragment.State.OFF, disable);
+            menuItems.put(IndicatorFragment.State.ON, disable);
+        }
 
         return contentView;
     }
@@ -122,7 +141,23 @@ public class IndicatorFragment extends Fragment {
         this.menuItems = menuItems;
         this.selectMenuItem = selectItem;
         registerForContextMenu(contentView);
+    }
 
+    public void setContextMenu(Map<State, Map<Integer, String>> menuItems){
+        setContextMenu(menuItems, this);
+    }
+
+    public void setContextMenu(MenuItem.OnMenuItemClickListener selectItem){
+        setContextMenu(menuItems, selectItem);
+    }
+
+    public void setContextMenu(){
+        setContextMenu(menuItems, this);
+    }
+
+    @Override
+    public boolean onMenuItemClick(MenuItem menuItem) {
+        return false;
     }
 
     public void setName(String name){
@@ -142,18 +177,24 @@ public class IndicatorFragment extends Fragment {
         ImageView iv = contentView.findViewById(R.id.indicatorFg);
         GradientDrawable gd = (GradientDrawable) iv.getDrawable();
         int indicatorColour = 0;
-        int textColour = ContextCompat.getColor(getContext(), R.color.white);
-        switch (state){
-            case ON:
-                indicatorColour = onColour;
-                break;
-            case OFF:
-                indicatorColour = offColour;
-                break;
-            case DISABLED:
-                indicatorColour = disabledColour;
-                textColour = ContextCompat.getColor(getContext(), R.color.mediumGrey);;
-                break;
+        int textColour = 0;
+        try {
+            textColour = ContextCompat.getColor(getContext(), R.color.white);
+            switch (state) {
+                case ON:
+                    indicatorColour = onColour;
+                    break;
+                case OFF:
+                    indicatorColour = offColour;
+                    break;
+                case DISABLED:
+                    indicatorColour = disabledColour;
+                    textColour = ContextCompat.getColor(getContext(), R.color.mediumGrey);
+                    ;
+                    break;
+            }
+        } catch (Exception e){
+            Log.e("IndicatorFragment", e.getMessage());
         }
         gd.setColor(indicatorColour);
 

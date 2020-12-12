@@ -65,15 +65,6 @@ public class LinearScaleFragment extends Fragment {
     @Override
     public void onInflate(Context context, AttributeSet attrs, Bundle savedInstanceState) {
         super.onInflate(context, attrs, savedInstanceState);
-
-        /*
-        try {
-            TypedArray a = getActivity().obtainStyledAttributes(attrs, R.styleable.IndicatorFragment);
-            //indicatorName = a.getString(R.styleable.IndicatorFragment_indicator_name);
-            a.recycle();
-        } catch (Exception e){
-            Log.e("RPMFragment", e.getMessage());
-        }*/
     }
 
     public void setLimits(int min, int max){

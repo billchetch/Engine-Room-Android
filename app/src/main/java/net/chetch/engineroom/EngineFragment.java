@@ -107,10 +107,12 @@ public class EngineFragment extends Fragment {
                     updateEngineDetails();
                 }
             });
+
+            if(model.isClientConnected()) {
+                model.sendCommand(EngineRoomMessageSchema.COMMAND_ENGINE_STATUS, engineID);
+            }
         }
     }
-
-
 
     public void setEngineID(String engineID){
         this.engineID = engineID;

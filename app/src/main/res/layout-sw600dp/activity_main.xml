@@ -68,7 +68,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <fragment
-            android:id="@+id/genset1"
+            android:id="@+id/induk"
             android:name="net.chetch.engineroom.EngineFragment"
             android:layout_width="400dp"
             android:layout_height="wrap_content"

@@ -3,12 +3,16 @@ package net.chetch.engineroom;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.viewpager2.widget.ViewPager2;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 
 import net.chetch.appframework.GenericActivity;
 import net.chetch.cmalarms.models.AlarmsMessagingModel;
@@ -20,6 +24,11 @@ import net.chetch.utilities.Utils;
 import net.chetch.webservices.WebserviceViewModel;
 import net.chetch.webservices.network.NetworkRepository;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 public class MainActivity extends GenericActivity {
     public enum DisplayOrientation{
         PORTRAIT,
@@ -30,20 +39,27 @@ public class MainActivity extends GenericActivity {
 
     AlarmsMessagingModel alarmsModel;
     EngineRoomMessagingModel engineRoomModel;
+
+    ViewPager2 mainViewPager = null;
+    MainPageAdapter mainPageAdapter;
+
     PumpFragment pompaCelupFragment;
     PumpFragment pompaSolarFragment;
-
     EngineFragment genset1;
     EngineFragment genset2;
 
     Observer dataLoadProgress  = obj -> {
-        WebserviceViewModel.LoadProgress progress = (WebserviceViewModel.LoadProgress) obj;
-        try {
-            String state = progress.startedLoading ? "Loading" : "Loaded";
-            String progressInfo = state + (progress.info == null ? "" : " " + progress.info.toLowerCase());
-            Log.i("Main", "in load data progress");
-        } catch (Exception e){
-            Log.e("Main", "load prigress: " + e.getMessage());
+        if(obj instanceof WebserviceViewModel.LoadProgress) {
+            WebserviceViewModel.LoadProgress progress = (WebserviceViewModel.LoadProgress) obj;
+            try {
+                String state = progress.startedLoading ? "Loading" : "Loaded";
+                String progressInfo = state + (progress.info == null ? "" : " " + progress.info.toLowerCase());
+                Log.i("Main", "in load data progress");
+            } catch (Exception e) {
+                Log.e("Main", "load prigress: " + e.getMessage());
+            }
+        } else if(obj.toString().equals(EngineRoomMessagingModel.CLIENT_NAME)){
+            onEngineRoomClientConnected();
         }
     };
 
@@ -73,7 +89,7 @@ public class MainActivity extends GenericActivity {
 
         //now load up
         Log.i("Main", "Calling load data");
-        MessagingViewModel.setClientName("AndroidCMEngineRoom");
+        //MessagingViewModel.setClientName("AndroidCMEngineRoom");
 
         alarmsModel = ViewModelProviders.of(this).get(AlarmsMessagingModel.class);
 
@@ -108,7 +124,9 @@ public class MainActivity extends GenericActivity {
             }
         });
 
-        pompaCelupFragment = (PumpFragment)getSupportFragmentManager().findFragmentById(R.id.pompaCelup);
+
+
+        /*pompaCelupFragment = (PumpFragment)getSupportFragmentManager().findFragmentById(R.id.pompaCelup);
         pompaCelupFragment.setPumpID(EngineRoomMessageSchema.POMPA_CELUP_ID);
         pompaSolarFragment = (PumpFragment)getSupportFragmentManager().findFragmentById(R.id.pompaSolar);
         pompaSolarFragment.setPumpID(EngineRoomMessageSchema.POMPA_SOLAR_ID);
@@ -127,9 +145,35 @@ public class MainActivity extends GenericActivity {
         genset2.setName("Genset 2");
         genset2.setMaxRPM(2000);
         genset2.setRPMThresholds(1500, 1600,1700);
-        genset2.setTempThresholds(50, 60);
+        genset2.setTempThresholds(50, 60); */
 
         engineRoomModel.loadData(dataLoadProgress);
+    }
+
+    private void onEngineRoomClientConnected(){
+        Log.i("Main", "on client connected");
+
+        if(mainViewPager == null) {
+            //link view pager to tabs
+            LinkedHashMap<String, String> tabMap = new LinkedHashMap<>();
+            tabMap.put("engines", "Engines");
+            tabMap.put("gensets", "Gensets");
+            tabMap.put("water_tanks", "Water");
+            tabMap.put("misc", "Pumps");
+
+            mainViewPager = findViewById(R.id.viewPager);
+            mainPageAdapter = new MainPageAdapter(this, tabMap);
+            mainViewPager.setAdapter(mainPageAdapter);
+            mainViewPager.setCurrentItem(0, true);
+            TabLayout tabLayout = findViewById(R.id.tabs);
+            new TabLayoutMediator(tabLayout, mainViewPager,
+                    (tab, position) -> {
+                        ArrayList tabKeys = new ArrayList<String>(tabMap.keySet());
+                        String title = tabMap.get(tabKeys.get(position));
+                        tab.setText(title);
+                    }
+            ).attach();
+        }
     }
 
     @Override

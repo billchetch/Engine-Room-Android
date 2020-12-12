@@ -39,6 +39,8 @@ public class EngineRoomMessagingModel extends MessagingViewModel {
         }
     }
 
+    static public final String CLIENT_NAME = "AndroidCMEngineRoom";
+
     public CommandResponseFilter onEngineStatus = new CommandResponseFilter(EngineRoomMessageSchema.SERVICE_NAME, EngineRoomMessageSchema.COMMAND_ENGINE_STATUS){
         @Override
         protected void onMatched(Message message) {
@@ -137,6 +139,8 @@ public class EngineRoomMessagingModel extends MessagingViewModel {
     public EngineRoomMessagingModel(){
         super();
 
+        setClientName(CLIENT_NAME);
+
         //TODO: Remove this
         permissableServerTimeDifference = 60 * 2;
 
@@ -162,7 +166,7 @@ public class EngineRoomMessagingModel extends MessagingViewModel {
     public void onClientConnected() {
         super.onClientConnected();
 
-        for(String engineID : liveDataEngines.keySet()) {
+        /*for(String engineID : liveDataEngines.keySet()) {
             sendCommand(EngineRoomMessageSchema.COMMAND_ENGINE_STATUS, engineID);
             Log.i("ERMM", "Requesting status for engine " + engineID);
         }
@@ -170,7 +174,7 @@ public class EngineRoomMessagingModel extends MessagingViewModel {
         for(String pumpID : liveDataPumps.keySet()){
             sendCommand(EngineRoomMessageSchema.COMMAND_PUMP_STATUS, pumpID);
             Log.i("ERMM", "Requesting status for pump " + pumpID);
-        }
+        } */
         Log.i("ERMM", "Client connected");
     }
 

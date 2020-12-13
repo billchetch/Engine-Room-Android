@@ -13,9 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,6 +21,11 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 public class LinearScaleFragment extends Fragment {
+    enum Orientation{
+        HORIZONTAL,
+        VERTICAL
+    }
+
     View contentView;
     int minValue = 0;
     int maxValue = 100;
@@ -31,7 +34,7 @@ public class LinearScaleFragment extends Fragment {
     List<Integer> thresholdValues = new ArrayList();
     List<Integer> thresholdColours = new ArrayList();
     String name;
-    boolean scaleWidth = true;
+    Orientation orientation = Orientation.HORIZONTAL;
     public String valueFormat = "%.1f";
 
     @Override
@@ -39,7 +42,8 @@ public class LinearScaleFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         // Inflate the layout for this fragment
-        contentView = inflater.inflate(R.layout.linear_scale, container, false);
+        int rid = orientation == Orientation.HORIZONTAL ? R.layout.linear_scale_horizontal : R.layout.linear_scale_vertical;
+        contentView = inflater.inflate(rid, container, false);
 
         linearScaleView = contentView.findViewById(R.id.lsScaleInterior);
         linearScaleView.setVisibility(View.INVISIBLE);
@@ -65,6 +69,24 @@ public class LinearScaleFragment extends Fragment {
     @Override
     public void onInflate(Context context, AttributeSet attrs, Bundle savedInstanceState) {
         super.onInflate(context, attrs, savedInstanceState);
+
+        try {
+            TypedArray a = getActivity().obtainStyledAttributes(attrs, R.styleable.LinearScaleFragment);
+            String o = a.getString(R.styleable.LinearScaleFragment_orientation);
+            if(o != null) {
+                switch (o.toLowerCase()) {
+                    case "vertical":
+                        orientation = Orientation.VERTICAL;
+                        break;
+                    default:
+                        orientation = Orientation.HORIZONTAL;
+                        break;
+                }
+            }
+            a.recycle();
+        } catch (Exception e){
+            Log.e("LinarScaleFragment", e.getMessage());
+        }
     }
 
     public void setLimits(int min, int max){
@@ -93,6 +115,8 @@ public class LinearScaleFragment extends Fragment {
 
     public void updateValue(double value){
         View scaleBorder = contentView.findViewById(R.id.lsScaleBorder);
+        boolean scaleWidth = orientation == Orientation.HORIZONTAL;
+
         int lsMax = scaleWidth ? scaleBorder.getWidth() : scaleBorder.getHeight();
 
         double scale = 0;
@@ -126,6 +150,10 @@ public class LinearScaleFragment extends Fragment {
 
         linearScaleView.setVisibility(dim > 0 ? View.VISIBLE: View.INVISIBLE);
 
+        setValue(value);
+    }
+
+    protected void setValue(double value){
         String sv = String.format(valueFormat, value);
         valueView.setText(value == 0 ? "" : sv);
     }

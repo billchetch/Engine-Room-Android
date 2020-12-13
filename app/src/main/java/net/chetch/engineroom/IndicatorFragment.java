@@ -42,22 +42,11 @@ public class IndicatorFragment extends Fragment implements MenuItem.OnMenuItemCl
     View contentView;
     String indicatorName;
     String indicatorDetails;
-    int onColour;
-    int offColour;
-    int disabledColour;
+    Map<State, Integer> stateColours = new HashMap<State, Integer>();
     State state = State.OFF;
     public Size size = Size.MEDIUM;
     MenuItem.OnMenuItemClickListener selectMenuItem;
     Map<State, Map<Integer, String>> menuItems;
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        disabledColour = ContextCompat.getColor(getContext(), R.color.darkGrey);
-        offColour = ContextCompat.getColor(getContext(), R.color.mediumnDarkGrey);
-        onColour =  ContextCompat.getColor(getContext(), R.color.bluegreen2);
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -75,6 +64,12 @@ public class IndicatorFragment extends Fragment implements MenuItem.OnMenuItemCl
         }
         contentView = inflater.inflate(rid, container, false);
         setName(indicatorName);
+
+        if(stateColours.size() == 0) {
+            stateColours.put(State.DISABLED, ContextCompat.getColor(getContext(), R.color.darkGrey));
+            stateColours.put(State.OFF, ContextCompat.getColor(getContext(), R.color.mediumnDarkGrey));
+            stateColours.put(State.ON, ContextCompat.getColor(getContext(), R.color.bluegreen2));
+        }
 
         if(menuItems == null) {
             menuItems = new HashMap<>();
@@ -179,18 +174,14 @@ public class IndicatorFragment extends Fragment implements MenuItem.OnMenuItemCl
         int indicatorColour = 0;
         int textColour = 0;
         try {
-            textColour = ContextCompat.getColor(getContext(), R.color.white);
+            indicatorColour = stateColours.get(state);
             switch (state) {
                 case ON:
-                    indicatorColour = onColour;
-                    break;
                 case OFF:
-                    indicatorColour = offColour;
+                    textColour = ContextCompat.getColor(getContext(), R.color.white);
                     break;
                 case DISABLED:
-                    indicatorColour = disabledColour;
                     textColour = ContextCompat.getColor(getContext(), R.color.mediumGrey);
-                    ;
                     break;
             }
         } catch (Exception e){

@@ -5,6 +5,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import net.chetch.engineroom.models.EngineRoomMessageSchema;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -70,6 +72,14 @@ public class MainPageFragment extends Fragment {
                 genset.setMaxRPM(2000);
                 genset.setRPMThresholds(1500, 1600,1700);
                 genset.setTempThresholds(50, 60);
+                break;
+
+            case "misc":
+                PumpFragment pumpFragment = (PumpFragment)getChildFragmentManager().findFragmentById(R.id.pompaCelup);
+                pumpFragment.setPumpID(EngineRoomMessageSchema.POMPA_CELUP_ID);
+
+                pumpFragment = (PumpFragment)getChildFragmentManager().findFragmentById(R.id.pompaSolar);
+                pumpFragment.setPumpID(EngineRoomMessageSchema.POMPA_SOLAR_ID);
                 break;
         }
     }

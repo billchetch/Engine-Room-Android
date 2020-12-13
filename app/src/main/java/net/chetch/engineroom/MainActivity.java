@@ -43,11 +43,6 @@ public class MainActivity extends GenericActivity {
     ViewPager2 mainViewPager = null;
     MainPageAdapter mainPageAdapter;
 
-    PumpFragment pompaCelupFragment;
-    PumpFragment pompaSolarFragment;
-    EngineFragment genset1;
-    EngineFragment genset2;
-
     Observer dataLoadProgress  = obj -> {
         if(obj instanceof WebserviceViewModel.LoadProgress) {
             WebserviceViewModel.LoadProgress progress = (WebserviceViewModel.LoadProgress) obj;

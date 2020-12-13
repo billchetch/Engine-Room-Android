@@ -5,6 +5,8 @@ import net.chetch.engineroom.data.RPMCounter;
 import net.chetch.engineroom.data.Pump;
 import net.chetch.engineroom.data.TemperatureSensor;
 import net.chetch.engineroom.data.Engine;
+import net.chetch.engineroom.data.WaterTank;
+import net.chetch.engineroom.data.WaterTanks;
 import net.chetch.messaging.MessageSchema;
 import net.chetch.messaging.Message;
 
@@ -25,6 +27,9 @@ public class EngineRoomMessageSchema extends MessageSchema {
     static public final String COMMAND_ENABLE_ENGINE = "enable-engine";
     static public final String COMMAND_PUMP_STATUS = "pump-status";
     static public final String COMMAND_ENABLE_PUMP = "enable-pump";
+    static public final String COMMAND_WATER_STATUS = "water-status";
+    static public final String COMMAND_ENABLE_WATER = "enable-water";
+    static public final String COMMAND_WATER_TANK_STATUS = "water-tank-status";
 
     static public final String RPM_NAME = "RPM";
     static public final String TEMP_ARRAY_NAME = "DS18B20";
@@ -32,6 +37,7 @@ public class EngineRoomMessageSchema extends MessageSchema {
     static public final String POMPA_CELUP_ID = "pmp_clp";
     static public final String POMPA_SOLAR_ID = "pmp_sol";
     static public final String PUMP_NAME = "PUMP";
+    static public final String WATER_TANK_NAME = "JSN-SR04T";
 
 
 
@@ -105,6 +111,28 @@ public class EngineRoomMessageSchema extends MessageSchema {
             engine.setOilSensorID(message.getString("OilSensorDeviceID"));
             engine.setTempSensorID(message.getString("TempSensorID"));
             return engine;
+        } else {
+            return null;
+        }
+    }
+
+    public WaterTanks getWaterTanks(){
+        WaterTanks waterTanks = new WaterTanks();
+        waterTanks.setEnabled(message.getBoolean("Enabled"));
+        waterTanks.setPercentFull(message.getInt("PercentFull"));
+        waterTanks.setTankIDs(message.getList("Tanks", String.class));
+        waterTanks.setCapacity(message.getInt("Capacity"));
+        waterTanks.setRemaining(message.getInt("Remaining"));
+        waterTanks.setLevel(message.getEnum("Level", WaterTanks.WaterLevel.class));
+        return waterTanks;
+    }
+
+    public WaterTank getWaterTank(){
+        if(message.hasValue(DEVICE_ID_KEY)) {
+            WaterTank waterTank = new WaterTank(message.getString(DEVICE_ID_KEY));
+            waterTank.setPercentFull(message.getInt("PercentFull"));
+
+            return waterTank;
         } else {
             return null;
         }

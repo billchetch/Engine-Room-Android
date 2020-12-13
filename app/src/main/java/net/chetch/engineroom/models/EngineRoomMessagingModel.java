@@ -8,6 +8,8 @@ import net.chetch.engineroom.data.Pump;
 import net.chetch.engineroom.data.RPMCounter;
 import net.chetch.engineroom.data.TemperatureSensor;
 import net.chetch.engineroom.data.Engine;
+import net.chetch.engineroom.data.WaterTank;
+import net.chetch.engineroom.data.WaterTanks;
 import net.chetch.messaging.Message;
 import net.chetch.messaging.MessagingViewModel;
 import net.chetch.messaging.filters.CommandResponseFilter;
@@ -130,11 +132,46 @@ public class EngineRoomMessagingModel extends MessagingViewModel {
         }
     };
 
+    public CommandResponseFilter onWaterStatus = new CommandResponseFilter(EngineRoomMessageSchema.SERVICE_NAME, EngineRoomMessageSchema.COMMAND_WATER_STATUS){
+        @Override
+        protected void onMatched(Message message) {
+            EngineRoomMessageSchema schema = new EngineRoomMessageSchema(message);
+            WaterTanks waterTanks = schema.getWaterTanks();
+            if(waterTanks != null){
+                liveDataWater.postValue(waterTanks);
+            }
+        }
+    };
+
+    public CommandResponseFilter onWaterEnabled = new CommandResponseFilter(EngineRoomMessageSchema.SERVICE_NAME, EngineRoomMessageSchema.COMMAND_ENABLE_WATER){
+        @Override
+        protected void onMatched(Message message) {
+            EngineRoomMessageSchema schema = new EngineRoomMessageSchema(message);
+            WaterTanks waterTanks = schema.getWaterTanks();
+            if(waterTanks != null){
+                liveDataWater.postValue(waterTanks);
+            }
+        }
+    };
+
+    public DeviceNameDataFilter onWaterTank = new DeviceNameDataFilter(EngineRoomMessageSchema.WATER_TANK_NAME){
+        @Override
+        protected void onMatched(Message message) {
+            EngineRoomMessageSchema schema = new EngineRoomMessageSchema(message);
+            WaterTank waterTank = schema.getWaterTank();
+            if(waterTank != null){
+                liveDataWaterTanks.postValue(waterTank.getDeviceID(), waterTank);
+            }
+        }
+    };
+
     LiveDataMap<Pump> liveDataPumps = new LiveDataMap<>();
     LiveDataMap<RPMCounter> liveDataRPMCounters = new LiveDataMap<>();
     LiveDataMap<TemperatureSensor> liveDataTemperatureSensors = new LiveDataMap<>();
     LiveDataMap<OilSensor> liveDataOilSensors = new LiveDataMap<>();
     LiveDataMap<Engine> liveDataEngines = new LiveDataMap<>();
+    MutableLiveData<WaterTanks> liveDataWater = new MutableLiveData<>();
+    LiveDataMap<WaterTank> liveDataWaterTanks = new LiveDataMap<>();
 
     public EngineRoomMessagingModel(){
         super();
@@ -153,6 +190,9 @@ public class EngineRoomMessagingModel extends MessagingViewModel {
             addMessageFilter(onTempArray);
             addMessageFilter(onTempSensor);
             addMessageFilter(onOilSensor);
+            addMessageFilter(onWaterStatus);
+            addMessageFilter(onWaterEnabled);
+            addMessageFilter(onWaterTank);
         } catch (Exception e){
             Log.e("ERMM", e.getMessage());
         }
@@ -166,15 +206,6 @@ public class EngineRoomMessagingModel extends MessagingViewModel {
     public void onClientConnected() {
         super.onClientConnected();
 
-        /*for(String engineID : liveDataEngines.keySet()) {
-            sendCommand(EngineRoomMessageSchema.COMMAND_ENGINE_STATUS, engineID);
-            Log.i("ERMM", "Requesting status for engine " + engineID);
-        }
-
-        for(String pumpID : liveDataPumps.keySet()){
-            sendCommand(EngineRoomMessageSchema.COMMAND_PUMP_STATUS, pumpID);
-            Log.i("ERMM", "Requesting status for pump " + pumpID);
-        } */
         Log.i("ERMM", "Client connected");
     }
 
@@ -198,6 +229,14 @@ public class EngineRoomMessagingModel extends MessagingViewModel {
         return liveDataEngines.get(key);
     }
 
+    public LiveData<WaterTanks> getWaterTanks(){
+        return liveDataWater;
+    }
+
+    public LiveData<WaterTank> getWaterTank(String key){
+        return liveDataWaterTanks.get(key);
+    }
+
     public void enableEngine(String engineID, boolean enable) {
         sendCommand(EngineRoomMessageSchema.COMMAND_ENABLE_ENGINE, engineID, enable);
         if(enable){
@@ -209,6 +248,13 @@ public class EngineRoomMessagingModel extends MessagingViewModel {
         sendCommand(EngineRoomMessageSchema.COMMAND_ENABLE_PUMP, pumpID, enable);
         if(enable){
             sendCommand(EngineRoomMessageSchema.COMMAND_PUMP_STATUS, pumpID);
+        }
+    }
+
+    public void enableWaterTanks(boolean enable) {
+        sendCommand(EngineRoomMessageSchema.COMMAND_ENABLE_WATER, enable);
+        if(enable){
+            sendCommand(EngineRoomMessageSchema.COMMAND_WATER_STATUS);
         }
     }
 }

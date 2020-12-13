@@ -4,4 +4,8 @@
         <attr name="indicator_name" format="string"/>
         <attr name="indicator_size" format="string"/>
     </declare-styleable>
+    <declare-styleable name="LinearScaleFragment">
+        <attr name="orientation" format="string"/>
+    </declare-styleable>
+
 </resources>

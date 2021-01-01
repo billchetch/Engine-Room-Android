@@ -45,6 +45,9 @@ public class WaterTanksFragment extends Fragment {
                 case IndicatorFragment.MENU_ITEM_ENABLE:
                     model.enableWaterTanks(true);
                     return true;
+                case IndicatorFragment.MENU_ITEM_VIEW_STATS:
+                    ((MainPageFragment)getParentFragment()).openViewStats(null);
+                    return true;
             }
             return true;
         };

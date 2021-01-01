@@ -2,6 +2,7 @@ package net.chetch.engineroom;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -15,21 +16,18 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import net.chetch.appframework.GenericActivity;
+import net.chetch.appframework.GenericDialogFragment;
+import net.chetch.appframework.IDialogManager;
 import net.chetch.cmalarms.models.AlarmsMessagingModel;
-import net.chetch.engineroom.data.Pump;
-import net.chetch.engineroom.models.EngineRoomMessageSchema;
 import net.chetch.engineroom.models.EngineRoomMessagingModel;
-import net.chetch.messaging.MessagingViewModel;
-import net.chetch.utilities.Utils;
+import net.chetch.engineroom.models.EngineRoomServiceModel;
 import net.chetch.webservices.WebserviceViewModel;
 import net.chetch.webservices.network.NetworkRepository;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
-public class MainActivity extends GenericActivity {
+public class MainActivity extends GenericActivity implements IDialogManager {
     public enum DisplayOrientation{
         PORTRAIT,
         LANDSCAPE
@@ -39,9 +37,10 @@ public class MainActivity extends GenericActivity {
 
     AlarmsMessagingModel alarmsModel;
     EngineRoomMessagingModel engineRoomModel;
+    EngineRoomServiceModel erServiceModel;
 
     ViewPager2 mainViewPager = null;
-    MainPageAdapter mainPageAdapter;
+    ViewPageAdapter mainPageAdapter;
 
     Observer dataLoadProgress  = obj -> {
         if(obj instanceof WebserviceViewModel.LoadProgress) {
@@ -49,9 +48,9 @@ public class MainActivity extends GenericActivity {
             try {
                 String state = progress.startedLoading ? "Loading" : "Loaded";
                 String progressInfo = state + (progress.info == null ? "" : " " + progress.info.toLowerCase());
-                Log.i("Main", "in load data progress");
+                Log.i("Main", "in load data progress ..." + progressInfo);
             } catch (Exception e) {
-                Log.e("Main", "load prigress: " + e.getMessage());
+                Log.e("Main", "load progress: " + e.getMessage());
             }
         } else if(obj.toString().equals(EngineRoomMessagingModel.CLIENT_NAME)){
             onEngineRoomClientConnected();
@@ -68,32 +67,17 @@ public class MainActivity extends GenericActivity {
         Log.i("Main", "Metrics of width, smallest width, height: " + configuration.screenWidthDp + "," + configuration.smallestScreenWidthDp + "," + configuration.screenHeightDp);
         Log.i("Main", "Creating main activity with orientation " + Orientation);
 
-        try {
-            //String apiBaseURL = "http://192.168.43.123:8001/api/";
-            //String apiBaseURL = "http://192.168.0.123:8001/api/";
-            //String apiBaseURL = "http://192.168.0.150:8001/api/";
-            //String apiBaseURL = "http://192.168.1.100:8001/api/";
-            //String apiBaseURL = "http://192.168.0.106:8001/api/";
-            String apiBaseURL = "http://192.168.0.52:8001/api/";
-            //String apiBaseURL = "http://192.168.1.101:8001/api/";
-            NetworkRepository.getInstance().setAPIBaseURL(apiBaseURL);
-        } catch (Exception e) {
-            Log.e("MVM", e.getMessage());
-            return;
-        }
-
         //now load up
         Log.i("Main", "Calling load data");
-        //MessagingViewModel.setClientName("AndroidCMEngineRoom");
 
-        alarmsModel = ViewModelProviders.of(this).get(AlarmsMessagingModel.class);
+        alarmsModel = new ViewModelProvider(this).get(AlarmsMessagingModel.class);
 
         alarmsModel.getError().observe(this, throwable -> {
             showError(throwable);
         });
         alarmsModel.loadData(dataLoadProgress);
 
-        engineRoomModel = ViewModelProviders.of(this).get(EngineRoomMessagingModel.class);
+        engineRoomModel = new ViewModelProvider(this).get(EngineRoomMessagingModel.class);
         engineRoomModel.getError().observe(this, throwable -> {
             showError(throwable);
         });
@@ -119,30 +103,13 @@ public class MainActivity extends GenericActivity {
             }
         });
 
-
-
-        /*pompaCelupFragment = (PumpFragment)getSupportFragmentManager().findFragmentById(R.id.pompaCelup);
-        pompaCelupFragment.setPumpID(EngineRoomMessageSchema.POMPA_CELUP_ID);
-        pompaSolarFragment = (PumpFragment)getSupportFragmentManager().findFragmentById(R.id.pompaSolar);
-        pompaSolarFragment.setPumpID(EngineRoomMessageSchema.POMPA_SOLAR_ID);
-        startTimer(5); //for updating UI to show things like how much time has elapsed ...most UI though is event driven
-
-        //initialise genset fragments
-        genset1 = (EngineFragment)getSupportFragmentManager().findFragmentById(R.id.genset1);
-        genset1.setEngineID("gs1");
-        genset1.setName("Genset 1");
-        genset1.setMaxRPM(2000);
-        genset1.setRPMThresholds(1500, 1600,1700);
-        genset1.setTempThresholds(50, 60);
-
-        genset2 = (EngineFragment)getSupportFragmentManager().findFragmentById(R.id.genset2);
-        genset2.setEngineID("gs2");
-        genset2.setName("Genset 2");
-        genset2.setMaxRPM(2000);
-        genset2.setRPMThresholds(1500, 1600,1700);
-        genset2.setTempThresholds(50, 60); */
-
         engineRoomModel.loadData(dataLoadProgress);
+
+        erServiceModel = new ViewModelProvider(this).get(EngineRoomServiceModel.class);
+        erServiceModel.getError().observe(this, throwable -> {
+            showError(throwable);
+        });
+        erServiceModel.loadData(dataLoadProgress);
     }
 
     private void onEngineRoomClientConnected(){
@@ -153,11 +120,12 @@ public class MainActivity extends GenericActivity {
             LinkedHashMap<String, String> tabMap = new LinkedHashMap<>();
             tabMap.put("engines", "Engines");
             tabMap.put("gensets", "Gensets");
+            //tabMap.put("diesel_tanks", "Diesel");
             tabMap.put("water_tanks", "Water");
             tabMap.put("misc", "Pumps");
 
             mainViewPager = findViewById(R.id.viewPager);
-            mainPageAdapter = new MainPageAdapter(this, tabMap);
+            mainPageAdapter = new ViewPageAdapter(this, MainPageFragment.class, tabMap);
             mainViewPager.setAdapter(mainPageAdapter);
             mainViewPager.setCurrentItem(0, true);
             TabLayout tabLayout = findViewById(R.id.tabs);
@@ -168,24 +136,44 @@ public class MainActivity extends GenericActivity {
                         tab.setText(title);
                     }
             ).attach();
+
+            mainViewPager.registerOnPageChangeCallback(new ViewPageChangeCallback(mainPageAdapter));
         }
     }
 
     @Override
     protected int onTimer() {
-        //PompaCelup pc = engineRoomModel.getPompaCelup().getValue();
-        //if(pc != null)updatePompaCelup(pc);
-
-        //genset1.updateUI();
-        //genset2.updateUI();
+        int position = mainViewPager.getCurrentItem();
+        ViewPageFragment vpf = (ViewPageFragment)mainPageAdapter.getFragment(position);
+        if(vpf != null){
+            vpf.updateUI();
+        }
 
         return super.onTimer();
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
 
+        startTimer(5);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        stopTimer();
+    }
 
     @Override
     public void showError(Throwable t) {
         super.showError(t);
+    }
+
+
+    @Override
+    public void onDialogPositiveClick(GenericDialogFragment dialog){
+
     }
 }

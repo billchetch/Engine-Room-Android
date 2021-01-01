@@ -18,7 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProviders;
 
-public class PumpFragment extends IndicatorFragment {
+public class PumpFragment extends IndicatorFragment implements IUIUpdatable {
     EngineRoomMessagingModel model;
     String pumpID;
     Pump pump;
@@ -40,6 +40,10 @@ public class PumpFragment extends IndicatorFragment {
                 pump = pmp;
                 updatePump();
             });
+
+            if(model.isClientConnected()) {
+                model.sendCommand(EngineRoomMessageSchema.COMMAND_PUMP_STATUS, pumpID);
+            }
         }
     }
 
@@ -52,6 +56,9 @@ public class PumpFragment extends IndicatorFragment {
             case IndicatorFragment.MENU_ITEM_ENABLE:
                 model.enablePump(pumpID, true);
                 break;
+            case IndicatorFragment.MENU_ITEM_VIEW_STATS:
+                ((MainPageFragment)getParentFragment()).openViewStats(pumpID);
+                return true;
         }
         return super.onMenuItemClick(menuItem);
     }
@@ -80,5 +87,10 @@ public class PumpFragment extends IndicatorFragment {
 
 
         update(state, details);
+    }
+
+    @Override
+    public void updateUI() {
+
     }
 }

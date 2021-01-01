@@ -1,8 +1,15 @@
-include ':cmalarms'
 include ':messaging'
-include ':utilities'
+project(':messaging').projectDir=new File('/Users/billthorgerson/Documents/AndroidStudioProjects/ChetchMessagingTest/messaging')
 include ':webservices'
-include ':appframework'
+project(':webservices').projectDir=new File('/Users/billthorgerson/Documents/AndroidStudioProjects/WebservicesTest/webservices')
+include ':utilities'
+project(':utilities').projectDir=new File('/Users/billthorgerson/Documents/AndroidStudioProjects/Utils/utilities')
 include ':appresources'
+project(':appresources').projectDir=new File('/Users/billthorgerson/Documents/AndroidStudioProjects/AppResourcesLib/appresources')
+include ':appframework'
+project(':appframework').projectDir=new File('/Users/billthorgerson/Documents/AndroidStudioProjects/AppFrameworkLib/appframework')
+include ':cmalarms'
+project(':cmalarms').projectDir=new File('/Users/billthorgerson/Documents/AndroidStudioProjects/AlarmPanel/cmalarms')
+
 include ':app'
 rootProject.name = "Engine Room"

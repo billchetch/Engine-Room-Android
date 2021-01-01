@@ -22,9 +22,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
-public class EngineFragment extends Fragment {
+public class EngineFragment extends Fragment  implements IUIUpdatable{
     EngineRoomMessagingModel model;
 
     String engineID;
@@ -52,6 +53,9 @@ public class EngineFragment extends Fragment {
                     return true;
                 case IndicatorFragment.MENU_ITEM_ENABLE:
                     model.enableEngine(engineID, true);
+                    return true;
+                case IndicatorFragment.MENU_ITEM_VIEW_STATS:
+                    ((MainPageFragment)getParentFragment()).openViewStats(engineID);
                     return true;
             }
             return true;
@@ -81,7 +85,7 @@ public class EngineFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         if(model == null) {
-            model = ViewModelProviders.of(getActivity()).get(EngineRoomMessagingModel.class);
+            model = new ViewModelProvider(getActivity()).get(EngineRoomMessagingModel.class);
 
             model.getRPMCounter(engineID + "_rpm").observe(getViewLifecycleOwner(), rpm->{
                if(engine != null && engine.isEnabled()){
@@ -155,7 +159,7 @@ public class EngineFragment extends Fragment {
         } else {
             if(engine.isEnabled()) {
                 if(engine.getLastOn() != null && engine.getLastOff() != null) {
-                    details = "Last ran from " + Utils.formatDate(engine.getLastOn(), "dd MMM @ HH:mm") + " until " + Utils.formatDate(engine.getLastOff(), "dd MMM @ HH:mm:ss") + " and ran for " + Utils.formatDuration(engine.getRunningDuration(), Utils.DurationFormat.D_H_M_S);
+                    details = "Last ran from " + Utils.formatDate(engine.getLastOn(), "dd MMM @ HH:mm") + " until " + Utils.formatDate(engine.getLastOff(), "dd MMM @ HH:mm") + " and ran for " + Utils.formatDuration(engine.getRunningDuration(), Utils.DurationFormat.D_H_M_S);
                 } else {
                     details = "Engine has never been run";
                 }
@@ -180,6 +184,9 @@ public class EngineFragment extends Fragment {
     }
 
     public void updateUI(){ //this is to be called by activity onTimer
-        updateEngineDetails();
+
+        if(engine != null && engine.isEnabled() && engine.isRunning()){
+            updateEngineDetails();
+        }
     }
 }

@@ -112,9 +112,13 @@ public class EngineFragment extends Fragment  implements IUIUpdatable{
                 }
             });
 
-            if(model.isClientConnected()) {
-                model.sendCommand(EngineRoomMessageSchema.COMMAND_ENGINE_STATUS, engineID);
-            }
+            getEngineStatus();
+        }
+    }
+
+    public void getEngineStatus(){
+        if(model.isClientConnected()) {
+            model.sendCommand(EngineRoomMessageSchema.COMMAND_ENGINE_STATUS, engineID);
         }
     }
 

@@ -6,6 +6,7 @@ import android.view.WindowManager;
 import net.chetch.appframework.GenericDialogFragment;
 import net.chetch.appframework.IDialogManager;
 import net.chetch.engineroom.models.EngineRoomMessageSchema;
+import net.chetch.engineroom.models.EngineRoomMessagingModel;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -79,46 +80,57 @@ public class MainPageFragment extends ViewPageFragment implements IDialogManager
         }
     }
 
-    public void openViewStats(String statsArea){
+    public void openViewStats(String statsSource){
         if(statsDialog != null){
             statsDialog.dismiss();
         }
         statsDialog = new StatsDialogFragment();
 
         LinkedHashMap<String, String> tabMap = new LinkedHashMap<>();
+        String pfx = tabKey + ":" + statsSource + ":";
+        tabMap.put(pfx + "log", "Log");
         switch(tabKey) {
             case "engines":
-                tabMap.put("engine_temp", "Temp");
-                tabMap.put("engine_rpm", "RPM");
-                tabMap.put("alerts", "Alerts");
-                break;
-
             case "gensets":
-                tabMap.put("engine_temp", "Temp");
-                tabMap.put("engine_rpm", "RPM");
-                tabMap.put("alerts", "Alerts");
+                tabMap.put(pfx + "Temperature Average", "Temp");
+                tabMap.put(pfx + "RPM Average", "RPM");
                 break;
 
             case "water_tanks":
-                tabMap.put("level", "Level");
-                tabMap.put("wt1", "WT1");
-                tabMap.put("wt2", "WT2");
-                tabMap.put("alerts", "Alerts");
+                tabMap.put(pfx + "Percent Full", "Level");
+                tabMap.put(tabKey + ":wt1:Percent Full", "WT1");
+                tabMap.put(tabKey + ":wt2:Percent Full", "WT2");
+                tabMap.put(tabKey + ":wt3:Percent Full", "WT3");
+                tabMap.put(tabKey + ":wt4:Percent Full", "WT4");
                 break;
 
             case "misc":
-                switch(statsArea){
-                    case "pompa-celup":
-                    case "pompa-solar":
-                        tabMap.put("level", "Level");
-                        tabMap.put("alerts", "Alerts");
-                        break;
-                }
                 break;
         }
 
         statsDialog.setTabs(tabMap);
         statsDialog.show(getChildFragmentManager(), "StatsDialog");
+    }
+
+    @Override
+    public void onPageSelected() {
+        super.onPageSelected();
+        EngineFragment engineFragment;
+        switch(tabKey){
+            case "engines":
+                engineFragment = (EngineFragment)getChildFragmentManager().findFragmentById(R.id.induk);
+                engineFragment.getEngineStatus();
+                engineFragment = (EngineFragment)getChildFragmentManager().findFragmentById(R.id.bantu);
+                engineFragment.getEngineStatus();
+                break;
+            case "gensets":
+                engineFragment = (EngineFragment)getChildFragmentManager().findFragmentById(R.id.genset1);
+                engineFragment.getEngineStatus();
+                engineFragment = (EngineFragment)getChildFragmentManager().findFragmentById(R.id.genset2);
+                engineFragment.getEngineStatus();
+                break;
+        }
+
     }
 
     @Override

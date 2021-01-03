@@ -1,11 +1,19 @@
 package net.chetch.engineroom.data;
 
+import net.chetch.utilities.Utils;
 import net.chetch.webservices.AboutService;
 import net.chetch.webservices.DataCache;
 import net.chetch.webservices.DataStore;
+import net.chetch.webservices.Webservice;
 import net.chetch.webservices.WebserviceRepository;
+import net.chetch.webservices.WebserviceViewModel;
+
+import java.util.Calendar;
+import java.util.TimeZone;
 
 public class EngineRoomRepository extends WebserviceRepository<IEngineRoomService> {
+    static final String DATE_FORMAT_FOR_REQUESTS = "yyyy-MM-dd HH:mm:ss";
+
 
     static private EngineRoomRepository instance = null;
     static public EngineRoomRepository getInstance(){
@@ -28,5 +36,25 @@ public class EngineRoomRepository extends WebserviceRepository<IEngineRoomServic
         }
 
         return entry;
+    }
+
+    private String date4request(Calendar cal){
+        return Utils.formatDate(cal, DATE_FORMAT_FOR_REQUESTS, TimeZone.getTimeZone("UTC"));
+    }
+
+    public DataStore<EngineRoomStates> getStates(String stateSource, String stateName, Calendar fromDate, Calendar toDate, int interval){
+        DataStore<EngineRoomStates> states = new DataStore<>();
+
+        service.getStates(stateSource, stateName, date4request(fromDate), date4request(toDate), interval).enqueue(createCallback(states));
+
+        return states;
+    }
+
+    public DataStore<EngineRoomEvents> getEvents(String eventSource, String eventTypes, Calendar fromDate, Calendar toDate, int interval){
+        DataStore<EngineRoomEvents> events = new DataStore<>();
+
+        service.getEvents(eventSource, eventTypes, date4request(fromDate), date4request(toDate), interval).enqueue(createCallback(events));
+
+        return events;
     }
 }

@@ -37,6 +37,10 @@ public class StatsPageFragment extends ViewPageFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        if(tabKey == null){
+            tabKey = savedInstanceState.getString("tabKey");
+        }
+
         //we get these first as they are used in getLayoutNameForTab which is called in the parent onCreateView method
         String[] parts = tabKey.split(":");
         openingTabKey = parts[0];

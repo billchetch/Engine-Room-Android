@@ -20,6 +20,6 @@ public interface IEngineRoomService {
     Call<EngineRoomStates> getStates(@Query("state_source") String stateSource, @Query("state_name") String stateName, @Query("from") String fromDate, @Query("to") String toDate, @Query("interval") int interval);
 
     @GET("events")
-    Call<EngineRoomEvents> getEvents(@Query("event_source") String eventSource, @Query("event_types") String eventTypes, @Query("from") String fromDate, @Query("to") String toDate, @Query("interval") int interval);
+    Call<EngineRoomEvents> getEvents(@Query("event_sources") String eventSources, @Query("event_types") String eventTypes, @Query("from") String fromDate, @Query("to") String toDate, @Query("interval") int interval);
 
 }

@@ -13,20 +13,19 @@ import androidx.lifecycle.MutableLiveData;
 public class EngineRoomServiceModel extends WebserviceViewModel {
     EngineRoomRepository engineRoomRepository = EngineRoomRepository.getInstance();
 
-    MutableLiveData<EngineRoomStates> liveDataEngineRoomStates = new MutableLiveData<>();
-    MutableLiveData<EngineRoomEvents> liveDataEngineRoomEvents = new MutableLiveData<>();
-
     public EngineRoomServiceModel(){
         addRepo(engineRoomRepository);
     }
 
     public LiveData<EngineRoomStates> getStates(String stateSource, String stateName, Calendar fromDate, Calendar toDate, int interval){
+        MutableLiveData<EngineRoomStates> liveDataEngineRoomStates = new MutableLiveData<>();
         engineRoomRepository.getStates(stateSource, stateName, fromDate, toDate, interval).add(liveDataEngineRoomStates);
         return liveDataEngineRoomStates;
     }
 
-    public LiveData<EngineRoomEvents> getEvents(String eventSource, String eventTypes, Calendar fromDate, Calendar toDate, int interval){
-        engineRoomRepository.getEvents(eventSource, eventTypes, fromDate, toDate, interval).add(liveDataEngineRoomEvents);
+    public LiveData<EngineRoomEvents> getEvents(String eventSources, String eventTypes, Calendar fromDate, Calendar toDate, int interval){
+        MutableLiveData<EngineRoomEvents> liveDataEngineRoomEvents = new MutableLiveData<>();
+        engineRoomRepository.getEvents(eventSources, eventTypes, fromDate, toDate, interval).add(liveDataEngineRoomEvents);
         return liveDataEngineRoomEvents;
     }
 }

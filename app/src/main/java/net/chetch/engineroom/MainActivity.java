@@ -143,12 +143,13 @@ public class MainActivity extends GenericActivity implements IDialogManager {
 
     @Override
     protected int onTimer() {
-        int position = mainViewPager.getCurrentItem();
-        ViewPageFragment vpf = (ViewPageFragment)mainPageAdapter.getFragment(position);
-        if(vpf != null){
-            vpf.updateUI();
+        if(mainViewPager != null) {
+            int position = mainViewPager.getCurrentItem();
+            ViewPageFragment vpf = (ViewPageFragment) mainPageAdapter.getFragment(position);
+            if (vpf != null) {
+                vpf.updateUI();
+            }
         }
-
         return super.onTimer();
     }
 

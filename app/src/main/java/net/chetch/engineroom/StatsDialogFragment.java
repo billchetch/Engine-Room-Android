@@ -57,6 +57,7 @@ public class StatsDialogFragment extends GenericDialogFragment implements View.O
         viewStatsViewPager.setAdapter(viewStatsAdapter);
         viewStatsViewPager.setCurrentItem(0, true);
         viewStatsViewPager.getAdapter().notifyDataSetChanged();
+        viewStatsViewPager.registerOnPageChangeCallback(new ViewPageChangeCallback(viewStatsAdapter));
 
 
         TabLayout tabLayout = contentView.findViewById(R.id.viewStatsTabs);
@@ -68,6 +69,10 @@ public class StatsDialogFragment extends GenericDialogFragment implements View.O
                 }
         ).attach();
 
+        View closeBtn = contentView.findViewById(R.id.statsDialogClose);
+        closeBtn.setOnClickListener(view -> {
+            dismiss();
+        });
         setFullScreen(0.9);
 
         return dialog;
@@ -82,7 +87,7 @@ public class StatsDialogFragment extends GenericDialogFragment implements View.O
     @Override
     public void onClick(View view) {
 
-        dismiss();
+        //dismiss();
     }
 
     @Override

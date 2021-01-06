@@ -98,10 +98,6 @@ public class MainPageFragment extends ViewPageFragment implements IDialogManager
 
             case "water_tanks":
                 tabMap.put(pfx + "Percent Full", "Level");
-                tabMap.put(tabKey + ":wt1:Percent Full", "WT1");
-                tabMap.put(tabKey + ":wt2:Percent Full", "WT2");
-                tabMap.put(tabKey + ":wt3:Percent Full", "WT3");
-                tabMap.put(tabKey + ":wt4:Percent Full", "WT4");
                 break;
 
             case "misc":

@@ -1,5 +1,7 @@
 package net.chetch.engineroom;
 
+import android.util.Log;
+
 import com.github.mikephil.charting.charts.BarLineChartBase;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
@@ -14,8 +16,9 @@ import java.util.Calendar;
 public class StatsDateAxisValueFormatter extends ValueFormatter
 {
     private final LineChart chart;
-    private String dateFormat = "HH";
-    public long secondsOffset = 0;
+    private String dateFormat = "HH:mm";
+    public int secondsOffset = 0;
+    public int secondsInterval = 0;
 
     public StatsDateAxisValueFormatter(LineChart chart, String dateFormat) {
         this.chart = chart;
@@ -30,12 +33,15 @@ public class StatsDateAxisValueFormatter extends ValueFormatter
 
     @Override
     public String getAxisLabel(float value, AxisBase axis) {
-        long millis = 1000*(secondsOffset + (long)value);
+        long seconds = secondsOffset + secondsInterval* (int)value;
 
         Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(millis);
+        cal.setTimeInMillis(seconds * 1000);
 
+        //Log.i("SDAVF", chart.getScaleX() + " - " + secondsInterval);
+        Log.i("SDAVF", "Seconds: " + seconds + " gives date: " + Utils.formatDate(cal, "yyyy-MM-dd HH:mm:ss"));
         return Utils.formatDate(cal, dateFormat);
+        //return (int)value + "";
     }
 
     @Override

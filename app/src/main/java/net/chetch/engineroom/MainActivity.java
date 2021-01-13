@@ -3,7 +3,6 @@ package net.chetch.engineroom;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelProviders;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.content.res.Configuration;
@@ -18,16 +17,19 @@ import com.google.android.material.tabs.TabLayoutMediator;
 import net.chetch.appframework.GenericActivity;
 import net.chetch.appframework.GenericDialogFragment;
 import net.chetch.appframework.IDialogManager;
+import net.chetch.cmalarms.AlarmPanelFragment;
+import net.chetch.cmalarms.IAlarmPanelListener;
 import net.chetch.cmalarms.models.AlarmsMessagingModel;
+import net.chetch.cmalarms.models.AlarmsWebserviceModel;
 import net.chetch.engineroom.models.EngineRoomMessagingModel;
-import net.chetch.engineroom.models.EngineRoomServiceModel;
+import net.chetch.engineroom.models.EngineRoomWebserviceModel;
 import net.chetch.webservices.WebserviceViewModel;
-import net.chetch.webservices.network.NetworkRepository;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
-public class MainActivity extends GenericActivity implements IDialogManager {
+public class MainActivity extends GenericActivity implements IDialogManager, IAlarmPanelListener {
+
     public enum DisplayOrientation{
         PORTRAIT,
         LANDSCAPE
@@ -36,9 +38,11 @@ public class MainActivity extends GenericActivity implements IDialogManager {
     static public DisplayOrientation Orientation;
 
     AlarmsMessagingModel alarmsModel;
+    AlarmsWebserviceModel alarmsWebserviceModel;
     EngineRoomMessagingModel engineRoomModel;
-    EngineRoomServiceModel erServiceModel;
+    EngineRoomWebserviceModel erServiceModel;
 
+    AlarmPanelFragment alarmPanelFragment;
     ViewPager2 mainViewPager = null;
     ViewPageAdapter mainPageAdapter;
 
@@ -70,12 +74,18 @@ public class MainActivity extends GenericActivity implements IDialogManager {
         //now load up
         Log.i("Main", "Calling load data");
 
+        //Alarms models
         alarmsModel = new ViewModelProvider(this).get(AlarmsMessagingModel.class);
-
         alarmsModel.getError().observe(this, throwable -> {
             showError(throwable);
         });
         alarmsModel.loadData(dataLoadProgress);
+
+        alarmsWebserviceModel = new ViewModelProvider(this).get(AlarmsWebserviceModel.class);
+        alarmsWebserviceModel.getError().observe(this, throwable ->{
+            Log.e("Main", throwable.getMessage());
+        });
+        alarmsWebserviceModel.loadData(dataLoadProgress);
 
         engineRoomModel = new ViewModelProvider(this).get(EngineRoomMessagingModel.class);
         engineRoomModel.getError().observe(this, throwable -> {
@@ -105,11 +115,14 @@ public class MainActivity extends GenericActivity implements IDialogManager {
 
         engineRoomModel.loadData(dataLoadProgress);
 
-        erServiceModel = new ViewModelProvider(this).get(EngineRoomServiceModel.class);
+        erServiceModel = new ViewModelProvider(this).get(EngineRoomWebserviceModel.class);
         erServiceModel.getError().observe(this, throwable -> {
             showError(throwable);
         });
         erServiceModel.loadData(dataLoadProgress);
+
+        alarmPanelFragment = (AlarmPanelFragment)getSupportFragmentManager().findFragmentById(R.id.alarmPanelFragment);
+        alarmPanelFragment.listener = this;
     }
 
     private void onEngineRoomClientConnected(){
@@ -175,6 +188,20 @@ public class MainActivity extends GenericActivity implements IDialogManager {
 
     @Override
     public void onDialogPositiveClick(GenericDialogFragment dialog){
+
+    }
+
+    @Override
+    public void onViewAlarmsLog(AlarmsWebserviceModel model) {
+        StatsDialogFragment statsDialog = new StatsDialogFragment();
+        LinkedHashMap<String, String> tabMap = new LinkedHashMap<>();
+        tabMap.put("main:alarms:log", "Log");
+        statsDialog.setTabs(tabMap);
+        statsDialog.show(getSupportFragmentManager(), "StatsDialog");
+    }
+
+    @Override
+    public void onSilenceAlarmBuzzer(int duration) {
 
     }
 }

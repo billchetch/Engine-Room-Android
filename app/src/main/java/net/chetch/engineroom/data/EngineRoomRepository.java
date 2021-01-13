@@ -1,5 +1,7 @@
 package net.chetch.engineroom.data;
 
+import android.util.Log;
+
 import net.chetch.utilities.Utils;
 import net.chetch.webservices.AboutService;
 import net.chetch.webservices.DataCache;
@@ -43,7 +45,7 @@ public class EngineRoomRepository extends WebserviceRepository<IEngineRoomServic
     }
 
     public DataStore<EngineRoomStates> getStates(String stateSource, String stateName, Calendar fromDate, Calendar toDate, int interval){
-        DataStore<EngineRoomStates> states = new DataStore<>();
+        final DataStore<EngineRoomStates> states = new DataStore<>();
 
         service.getStates(stateSource, stateName, date4request(fromDate), date4request(toDate), interval).enqueue(createCallback(states));
 
@@ -51,7 +53,7 @@ public class EngineRoomRepository extends WebserviceRepository<IEngineRoomServic
     }
 
     public DataStore<EngineRoomEvents> getEvents(String eventSource, String eventTypes, Calendar fromDate, Calendar toDate, int interval){
-        DataStore<EngineRoomEvents> events = new DataStore<>();
+        final DataStore<EngineRoomEvents> events = new DataStore<>();
 
         service.getEvents(eventSource, eventTypes, date4request(fromDate), date4request(toDate), interval).enqueue(createCallback(events));
 

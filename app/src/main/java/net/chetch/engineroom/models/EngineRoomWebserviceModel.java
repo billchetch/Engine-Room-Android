@@ -10,10 +10,10 @@ import java.util.Calendar;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-public class EngineRoomServiceModel extends WebserviceViewModel {
+public class EngineRoomWebserviceModel extends WebserviceViewModel {
     EngineRoomRepository engineRoomRepository = EngineRoomRepository.getInstance();
 
-    public EngineRoomServiceModel(){
+    public EngineRoomWebserviceModel(){
         addRepo(engineRoomRepository);
     }
 

@@ -64,6 +64,8 @@ public class MainPageFragment extends ViewPageFragment implements IDialogManager
                 break;
 
             case "water_tanks":
+                WaterTanksFragment wts = (WaterTanksFragment)getChildFragmentManager().findFragmentById((R.id.waterTanksFragment));
+                fragments2update.add(wts);
                 break;
 
             case "misc":

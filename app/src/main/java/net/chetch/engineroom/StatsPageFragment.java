@@ -22,18 +22,22 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 
 import net.chetch.appframework.RecyclerViewFragmentAdapter;
+import net.chetch.cmalarms.models.AlarmsWebserviceModel;
 import net.chetch.engineroom.data.EngineRoomEvent;
+import net.chetch.engineroom.data.EngineRoomEvents;
 import net.chetch.engineroom.data.EngineRoomState;
-import net.chetch.engineroom.models.EngineRoomServiceModel;
+import net.chetch.engineroom.data.EngineRoomStates;
+import net.chetch.engineroom.models.EngineRoomWebserviceModel;
 import net.chetch.utilities.DatePeriod;
 import net.chetch.utilities.Utils;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -43,7 +47,8 @@ public class StatsPageFragment extends ViewPageFragment implements OnChartValueS
     static public final String STATE_DATE_FORMAT = "MMM d, HH:mm:ss";
     static public final String DATE_PERIOD_DATE_FORMAT = "MMM d";
 
-    EngineRoomServiceModel erServiceModel;
+    EngineRoomWebserviceModel erServiceModel;
+    AlarmsWebserviceModel alarmsWebserviceModel;
     StatsPrevNextFragment prevNextFragment;
 
     TextView statsTitle;
@@ -59,9 +64,12 @@ public class StatsPageFragment extends ViewPageFragment implements OnChartValueS
     RecyclerView logRecyclerView;
     RecyclerViewFragmentAdapter<StatsEventItemFragment> eventLogAdapter;
     RecyclerViewFragmentAdapter<StatsStateItemFragment> stateLogAdapter;
+    RecyclerViewFragmentAdapter<StatsAlarmItemFragment> alarmsLogAdapter;
 
     LineChart chart;
     StatsDateAxisValueFormatter dateXAxisFormatter;
+    DatePeriod period;
+    int dpinterval;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -102,8 +110,10 @@ public class StatsPageFragment extends ViewPageFragment implements OnChartValueS
     private void loadData(){
         //get the date period and interval to load
         int position = prevNextFragment.getCurrentPosition();
-        DatePeriod period;
-        int interval = 0;
+        boolean loadEvents = false;
+        String eventSources = statsSource;
+        boolean loadStates = false;
+        String stateSource = statsSource;
 
         //determine what model methods to call
         switch(statsName) {
@@ -111,101 +121,34 @@ public class StatsPageFragment extends ViewPageFragment implements OnChartValueS
             case "Temperature Average":
             case "RPM":
             case "RPM Average":
+                period = DatePeriod.getPeriod(datePeriodTimeUnit, 1*24, position);
+                loadStates = true;
+                break;
+
             case "Percent Full":
             case "Level":
-                period = DatePeriod.getPeriod(datePeriodTimeUnit, 1*24, position);
-                Log.i("SPF", "Loading states for " + statsName);
-                erServiceModel.getStates(statsSource, statsName, period.fromDate, period.toDate, 5*60).observe(getViewLifecycleOwner(), states -> {
-                    if(stateLogAdapter != null){
-                        stateLogAdapter.setDataset(states);
-                    } else if(chart != null) {
-                        states.sortEarliestFirst();
-                        ArrayList<Entry> values = new ArrayList<>();
-
-                        long x = 0;
-                        dateXAxisFormatter.secondsOffset = period.fromDate.getTimeInMillis() / 1000;
-                        for (EngineRoomState state : states) {
-                            Float val = state.getStateAsFloat();
-                            if(val == null)continue;
-
-                            Calendar cal = state.getCreated();
-                            x = (cal.getTimeInMillis() - period.fromDate.getTimeInMillis()) / 1000;
-                            values.add(new Entry(x, val, state));
-                        }
-
-                        LineDataSet set1 = new LineDataSet(values, statsName);
-
-                        //set1.setMode(LineDataSet.Mode.CUBIC_BEZIER);
-                        //set1.setCubicIntensity(0.2f);
-                        set1.setMode(LineDataSet.Mode.LINEAR);
-                        set1.setDrawFilled(false);
-                        set1.setDrawCircles(false);
-                        set1.setLineWidth(1.8f);
-                        set1.setHighLightColor(Color.rgb(0, 255, 0));
-                        set1.setColor(Color.WHITE);
-                        set1.setFillAlpha(100);
-                        set1.setDrawHorizontalHighlightIndicator(true);
-                        set1.setDrawVerticalHighlightIndicator(true);
-
-                        set1.setFillFormatter(new IFillFormatter() {
-                            @Override
-                            public float getFillLinePosition(ILineDataSet dataSet, LineDataProvider dataProvider) {
-                                return chart.getAxisLeft().getAxisMinimum();
-                            }
-                        });
-
-                        // create a data object with the data sets
-                        LineData data = new LineData(set1);
-                        //data.setValueTypeface(tfLight);
-                        data.setValueTextSize(9f);
-                        data.setDrawValues(false);
-
-                        // set data
-                        chart.setData(data);
-
-                        //modify appearance
-                        YAxis yAxis = chart.getAxisLeft();
-                        XAxis xAxis = chart.getXAxis();
-                        switch(statsName){
-                            case "Temperature":
-                            case "Temperature Average":
-                            case "Percent Full":
-                                yAxis.setAxisMinimum(0f);
-                                yAxis.setAxisMaximum(100f);
-                                xAxis.setLabelCount(12);
-                                break;
-
-                            case "RPM":
-                            case "RPM Average":
-                                yAxis.setAxisMinimum(250f);
-                                yAxis.setAxisMaximum(2000f);
-                                xAxis.setLabelCount(12);
-                                break;
-                        }
-
-                        //draw
-                        chart.invalidate();
-                    }
-
-                    onLoadData();
-                    Log.i("SPF", " ...... Loaded " + states.size() + " states for " + statsName);
-                });
-                break;
-            default:
                 period = DatePeriod.getPeriod(datePeriodTimeUnit, 7*24, position);
-                Log.i("SPF", "Loading events for " + statsName);
-                String  eventSources = statsSource;
-                String[] sources = new String[]{"rpm", "oil", "temp"};
-                for(String es : sources){
-                    eventSources += "," + statsSource + "_" + es;
-                }
-                erServiceModel.getEvents(eventSources, EngineRoomEvent.ALL_TYPES, period.fromDate, period.toDate, 0).observe(getViewLifecycleOwner(), events -> {
-                    if(eventLogAdapter != null){
-                        eventLogAdapter.setDataset(events);
+                loadStates = true;
+                break;
+
+            case "log":
+                if(statsSource.toLowerCase().equals("alarms")){
+                    period = DatePeriod.getPeriod(datePeriodTimeUnit, 4*7*24, position);
+                    alarmsWebserviceModel.getLog(period.fromDate, period.toDate).observe(getViewLifecycleOwner(), entries->{
+                        if(alarmsLogAdapter != null){
+                            alarmsLogAdapter.setDataset(entries);
+                        }
+                        onLoadData();
+                        Log.i("SPF", "  ..... Loaded " + entries.size() + " entries (#" + entries.hashCode() + ") for " + statsName + " " + period.toString("yyyy-MM-dd HH:mm:ss"));
+                    });
+                } else {
+                    period = DatePeriod.getPeriod(datePeriodTimeUnit, 7*24, position);
+                    loadEvents = true;
+                    String[] sources = new String[]{"rpm", "oil", "temp"};
+                    for (String es : sources) {
+                        eventSources += "," + statsSource + "_" + es;
                     }
-                    onLoadData();
-                    Log.i("SPF", "  ..... Loaded " + events.size() + " events for " + statsName);
-                });
+                }
                 break;
 
         }
@@ -217,6 +160,32 @@ public class StatsPageFragment extends ViewPageFragment implements OnChartValueS
             s += " to ";
             s += Utils.formatDate(period.toDate, DATE_PERIOD_DATE_FORMAT);
             statsTitle.setText(s);
+        }
+
+        if(loadStates){
+            Log.i("SPF", "Loading states for " + statsName);
+            dpinterval = 5*60;
+            erServiceModel.getStates(stateSource, statsName, period.fromDate, period.toDate, dpinterval).observe(getViewLifecycleOwner(), states->{
+                if(stateLogAdapter != null){
+                    stateLogAdapter.setDataset(states);
+                } else if(chart != null) {
+                    initGraph(states);
+                }
+
+                onLoadData();
+                Log.i("SPF", " ...... Loaded " + states.size() + " states for " + statsName);
+            });
+        } //end load states
+
+        if(loadEvents){
+            Log.i("SPF", "Loading events for " + statsName);
+            erServiceModel.getEvents(eventSources, EngineRoomEvent.ALL_TYPES, period.fromDate, period.toDate, 0).observe(getViewLifecycleOwner(), events ->{
+                if (eventLogAdapter != null) {
+                    eventLogAdapter.setDataset(events);
+                }
+                onLoadData();
+                Log.i("SPF", "  ..... Loaded " + events.size() + " events (#" + events.hashCode() + ") for " + statsName + " " + period.toString("yyyy-MM-dd HH:mm:ss"));
+            });
         }
 
         //clear away previous data
@@ -249,7 +218,8 @@ public class StatsPageFragment extends ViewPageFragment implements OnChartValueS
 
     @Override
     protected void init() {
-        erServiceModel = new ViewModelProvider(getActivity()).get(EngineRoomServiceModel.class);
+        erServiceModel = new ViewModelProvider(getActivity()).get(EngineRoomWebserviceModel.class);
+        alarmsWebserviceModel = new ViewModelProvider(getActivity()).get(AlarmsWebserviceModel.class);
 
         statsTitle = contentView.findViewById(R.id.statsTitle);
         progressBar = contentView.findViewById(R.id.progressBar);
@@ -261,8 +231,13 @@ public class StatsPageFragment extends ViewPageFragment implements OnChartValueS
 
             if(statsName.equals("log")) {
                 //events log
-                eventLogAdapter = new RecyclerViewFragmentAdapter(StatsEventItemFragment.class);
-                logRecyclerView.setAdapter(eventLogAdapter);
+                if(statsSource.toLowerCase().equals("alarms")){
+                    alarmsLogAdapter = new RecyclerViewFragmentAdapter(StatsAlarmItemFragment.class);
+                    logRecyclerView.setAdapter(alarmsLogAdapter);
+                } else {
+                    eventLogAdapter = new RecyclerViewFragmentAdapter(StatsEventItemFragment.class);
+                    logRecyclerView.setAdapter(eventLogAdapter);
+                }
             } else {
                 //state log
                 //stateLogAdapter = new RecyclerViewFragmentAdapter<>(StatsStateItemFragment.class);
@@ -274,7 +249,7 @@ public class StatsPageFragment extends ViewPageFragment implements OnChartValueS
         chart = contentView.findViewById(R.id.chart1);
         if(chart != null){
             //state graph
-            chart.setPinchZoom(false);
+            chart.setPinchZoom(true);
             chart.setOnChartValueSelectedListener(this);
 
             dateXAxisFormatter = new StatsDateAxisValueFormatter(chart);
@@ -300,6 +275,12 @@ public class StatsPageFragment extends ViewPageFragment implements OnChartValueS
             chart.getDescription().setEnabled(false);
             chart.getLegend().setEnabled(false);
             chart.setNoDataText("");
+
+            View valueBox = contentView.findViewById(R.id.valueBox);
+            valueBox.setOnClickListener(view -> {
+                    chart.highlightValues(null);
+                    onNothingSelected();
+                });
         }
 
 
@@ -322,21 +303,93 @@ public class StatsPageFragment extends ViewPageFragment implements OnChartValueS
 
             Log.i("SPF", "onPageSelected ... stats adapater for " + statsName + ": " + stateLogAdapter.hashCode() + ", log recycler view " + logRecyclerView.hashCode());
         }
+    }
 
+    private void initGraph(EngineRoomStates states){
+        states.sortEarliestFirst();
+        ArrayList<Entry> values = new ArrayList<>();
+        long intervalCount = period.getDuration(TimeUnit.SECONDS) / dpinterval;
+        dateXAxisFormatter.secondsInterval = dpinterval;
+        dateXAxisFormatter.secondsOffset = (int)(period.fromDate.getTimeInMillis() / 1000);
+        for(EngineRoomState state : states){
+            long seconds = state.getCreated().getTimeInMillis() / 1000;
+            float x = (float)(seconds - dateXAxisFormatter.secondsOffset) / (float)dpinterval;
+            Entry entry = new Entry(x, state.getStateAsFloat(), state);
+            values.add(entry);
+        }
+
+        LineDataSet set1 = new LineDataSet(values, statsName);
+
+        //set1.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+        //set1.setCubicIntensity(0.2f);
+        set1.setMode(LineDataSet.Mode.LINEAR);
+        set1.setDrawFilled(false);
+        set1.setDrawCircles(false);
+        set1.setLineWidth(1.8f);
+        set1.setHighLightColor(Color.rgb(0, 255, 0));
+        set1.setColor(Color.WHITE);
+        set1.setFillAlpha(100);
+        set1.setDrawHorizontalHighlightIndicator(true);
+        set1.setDrawVerticalHighlightIndicator(true);
+
+        set1.setFillFormatter(new IFillFormatter() {
+            @Override
+            public float getFillLinePosition(ILineDataSet dataSet, LineDataProvider dataProvider) {
+                return chart.getAxisLeft().getAxisMinimum();
+            }
+        });
+
+        // create a data object with the data sets
+        LineData data = new LineData(set1);
+        //data.setValueTypeface(tfLight);
+        data.setValueTextSize(9f);
+        data.setDrawValues(false);
+
+        // set data
+        chart.setData(data);
+
+        //modify appearance
+        YAxis yAxis = chart.getAxisLeft();
+        XAxis xAxis = chart.getXAxis();
+        xAxis.setAxisMinimum(0);
+        xAxis.setAxisMaximum(intervalCount);
+        xAxis.setLabelCount(9, true);
+        dateXAxisFormatter.secondsInterval = dpinterval;
+
+        switch(statsName){
+            case "Temperature":
+            case "Temperature Average":
+            case "Percent Full":
+                yAxis.setAxisMinimum(0f);
+                yAxis.setAxisMaximum(100f);
+                break;
+
+            case "RPM":
+            case "RPM Average":
+                yAxis.setAxisMinimum(250f);
+                yAxis.setAxisMaximum(2000f);
+                break;
+        }
+
+        //draw
+        onNothingSelected();
+        chart.fitScreen();
+        chart.invalidate();
     }
 
     @Override
     public void onValueSelected(Entry e, Highlight h) {
         if(chart != null){
-            EngineRoomState state = (EngineRoomState)e.getData();
             TextView tvX = contentView.findViewById(R.id.xValue);
             TextView tvY = contentView.findViewById(R.id.yValue);
 
-            tvX.setText(Utils.formatDate(state.getCreated(), "dd MMM HH:mm:ss"));
-            tvY.setText(state.getStateValue());
-
             View valueBox = contentView.findViewById(R.id.valueBox);
             valueBox.setVisibility(View.VISIBLE);
+
+            EngineRoomState state = (EngineRoomState)e.getData();
+            tvX.setText(Utils.formatDate(state.getCreated(), "dd MMM HH:mm:ss"));
+            tvY.setText(String.format("%.1f", state.getStateAsFloat()) + "\u2103");
+
         }
     }
 

@@ -1,6 +1,7 @@
 package net.chetch.engineroom;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -12,21 +13,24 @@ import net.chetch.engineroom.models.EngineRoomMessageSchema;
 import net.chetch.engineroom.models.EngineRoomMessagingModel;
 import net.chetch.utilities.Utils;
 
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
-public class WaterTanksFragment extends Fragment {
+public class WaterTanksFragment extends Fragment implements IUIUpdatable{
     EngineRoomMessagingModel model;
 
     View contentView;
     IndicatorFragment titleFragment;
     WaterTanks waterTanks = null;
     Map<String, WaterTankFragment> waterTankFragments = new HashMap<>();
+    Calendar statusLastRequested = null;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -46,7 +50,7 @@ public class WaterTanksFragment extends Fragment {
                     model.enableWaterTanks(true);
                     return true;
                 case IndicatorFragment.MENU_ITEM_VIEW_STATS:
-                    ((MainPageFragment)getParentFragment()).openViewStats(null);
+                    ((MainPageFragment)getParentFragment()).openViewStats(EngineRoomMessageSchema.WATER_TANKS_ID);
                     return true;
             }
             return true;
@@ -61,7 +65,7 @@ public class WaterTanksFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         if(model == null) {
-            model = ViewModelProviders.of(getActivity()).get(EngineRoomMessagingModel.class);
+            model =  new ViewModelProvider(getActivity()).get(EngineRoomMessagingModel.class);
 
             model.getWaterTanks().observe(getViewLifecycleOwner(), wts ->{
                 if(wts != null){
@@ -85,6 +89,7 @@ public class WaterTanksFragment extends Fragment {
 
             if(model.isClientConnected()) {
                 model.sendCommand(EngineRoomMessageSchema.COMMAND_WATER_STATUS);
+                statusLastRequested = Calendar.getInstance();
             }
         }
     }
@@ -122,5 +127,15 @@ public class WaterTanksFragment extends Fragment {
 
         wtf.setName(wt.getDeviceID().toUpperCase());
         wtf.updateValue(wt.getPercentFull());
+    }
+
+    @Override
+    public void updateUI() {
+        //we should put a counter
+        if(statusLastRequested == null || Calendar.getInstance().getTimeInMillis() - statusLastRequested.getTimeInMillis() > 30000) {
+            model.sendCommand(EngineRoomMessageSchema.COMMAND_WATER_STATUS);
+            statusLastRequested = Calendar.getInstance();
+            Log.i("WTF", "Requesting water status so as to update UI");
+        }
     }
 }

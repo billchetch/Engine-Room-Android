@@ -37,6 +37,7 @@ public class EngineRoomMessageSchema extends MessageSchema {
     static public final String POMPA_CELUP_ID = "pmp_clp";
     static public final String POMPA_SOLAR_ID = "pmp_sol";
     static public final String PUMP_NAME = "PUMP";
+    static public final String WATER_TANKS_ID = "wts";
     static public final String WATER_TANK_NAME = "JSN-SR04T";
 
 

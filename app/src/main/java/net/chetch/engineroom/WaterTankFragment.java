@@ -7,7 +7,7 @@ import android.view.ViewGroup;
 
 import androidx.core.content.ContextCompat;
 
-public class WaterTankFragment extends LinearScaleFragment {
+public class WaterTankFragment extends LinearScaleFragment{
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

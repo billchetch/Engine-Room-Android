@@ -65,6 +65,18 @@ public class EngineRoomMessagingModel extends MessagingViewModel {
         }
     };
 
+
+    public ServiceDataFilter onEngineRunning = new ServiceDataFilter("Engine,EngineRunning") {
+        @Override
+        protected void onMatched(Message message) {
+            EngineRoomMessageSchema schema = new EngineRoomMessageSchema(message);
+            Engine engine = schema.getEngine();
+            if(engine != null){
+                liveDataEngines.postValue(engine.getEngineID(), engine);
+            }
+        }
+    };
+
     public CommandResponseFilter onPumpEnabled = new CommandResponseFilter(EngineRoomMessageSchema.SERVICE_NAME, EngineRoomMessageSchema.COMMAND_ENABLE_PUMP){
         @Override
         protected void onMatched(Message message) {
@@ -184,6 +196,7 @@ public class EngineRoomMessagingModel extends MessagingViewModel {
         try {
             addMessageFilter(onEngineStatus);
             addMessageFilter(onEngineEnabled);
+            addMessageFilter(onEngineRunning);
             addMessageFilter(onPump);
             addMessageFilter(onPumpEnabled);
             addMessageFilter(onRPM);

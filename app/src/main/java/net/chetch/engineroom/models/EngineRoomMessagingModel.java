@@ -41,8 +41,6 @@ public class EngineRoomMessagingModel extends MessagingViewModel {
         }
     }
 
-    static public final String CLIENT_NAME = "AndroidCMEngineRoom";
-
     public CommandResponseFilter onEngineStatus = new CommandResponseFilter(EngineRoomMessageSchema.SERVICE_NAME, EngineRoomMessageSchema.COMMAND_ENGINE_STATUS){
         @Override
         protected void onMatched(Message message) {
@@ -187,8 +185,6 @@ public class EngineRoomMessagingModel extends MessagingViewModel {
 
     public EngineRoomMessagingModel(){
         super();
-
-        setClientName(CLIENT_NAME);
 
         //TODO: Remove this
         permissableServerTimeDifference = 60 * 2;

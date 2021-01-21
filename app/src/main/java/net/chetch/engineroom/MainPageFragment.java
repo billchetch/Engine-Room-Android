@@ -82,11 +82,12 @@ public class MainPageFragment extends ViewPageFragment implements IDialogManager
         }
     }
 
-    public void openViewStats(String statsSource){
+    public void openViewStats(String statsSource, String dialogTitle){
         if(statsDialog != null){
             statsDialog.dismiss();
         }
         statsDialog = new StatsDialogFragment();
+        statsDialog.dialogTitle = dialogTitle;
 
         LinkedHashMap<String, String> tabMap = new LinkedHashMap<>();
         String pfx = tabKey + ":" + statsSource + ":";

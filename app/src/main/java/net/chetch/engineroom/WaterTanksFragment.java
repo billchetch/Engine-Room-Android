@@ -50,7 +50,7 @@ public class WaterTanksFragment extends Fragment implements IUIUpdatable{
                     model.enableWaterTanks(true);
                     return true;
                 case IndicatorFragment.MENU_ITEM_VIEW_STATS:
-                    ((MainPageFragment)getParentFragment()).openViewStats(EngineRoomMessageSchema.WATER_TANKS_ID);
+                    ((MainPageFragment)getParentFragment()).openViewStats(EngineRoomMessageSchema.WATER_TANKS_ID, "Water");
                     return true;
             }
             return true;

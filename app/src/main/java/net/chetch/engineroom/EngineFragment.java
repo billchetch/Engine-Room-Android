@@ -55,7 +55,7 @@ public class EngineFragment extends Fragment  implements IUIUpdatable{
                     model.enableEngine(engineID, true);
                     return true;
                 case IndicatorFragment.MENU_ITEM_VIEW_STATS:
-                    ((MainPageFragment)getParentFragment()).openViewStats(engineID);
+                    ((MainPageFragment)getParentFragment()).openViewStats(engineID, engineName);
                     return true;
             }
             return true;

@@ -19,9 +19,6 @@ public class ERApplication extends ChetchApplication {
             String apiBaseURL = sharedPref.getString("api_base_url", null);
             NetworkRepository.getInstance().setAPIBaseURL(apiBaseURL);
 
-            //String pollTime = sharedPref.getString("poll_server_time", "10");
-            //MainActivity.pollServerTime = Integer.parseInt(pollTime);
-
         } catch (Exception e){
             Log.e("ERApplication", e.getMessage());
         }

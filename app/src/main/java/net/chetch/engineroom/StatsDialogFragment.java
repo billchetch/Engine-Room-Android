@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -20,6 +21,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 public class StatsDialogFragment extends GenericDialogFragment implements View.OnClickListener, IUIUpdatable {
 
+    String dialogTitle;
     LinkedHashMap<String, String> tabMap;
     ViewPager2 viewStatsViewPager;
     ViewPageAdapter viewStatsAdapter;
@@ -37,6 +39,9 @@ public class StatsDialogFragment extends GenericDialogFragment implements View.O
             if(savedInstanceState.containsKey("tabMap")){
                 tabMap = (LinkedHashMap<String,String>)savedInstanceState.getSerializable("tabMap");
             }
+            if(savedInstanceState.containsKey("dialogTitle")){
+                dialogTitle = savedInstanceState.getString("dialogTitle");
+            }
         }
     }
 
@@ -48,8 +53,10 @@ public class StatsDialogFragment extends GenericDialogFragment implements View.O
         Dialog dialog = createDialog();
 
         Log.i("VSD", "Dialog created");
-
         getChildFragmentManager().getFragments().clear();
+
+        TextView statsDialogTitle = contentView.findViewById(R.id.statsDialogTitle);
+        statsDialogTitle.setText(dialogTitle.toUpperCase() + ":");
 
         viewStatsViewPager = contentView.findViewById(R.id.viewStatsViewPager);
         viewStatsAdapter = new ViewPageAdapter(this, StatsPageFragment.class, tabMap);
@@ -81,6 +88,7 @@ public class StatsDialogFragment extends GenericDialogFragment implements View.O
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
+        outState.putString("dialogTitle", dialogTitle);
         outState.putSerializable("tabMap", tabMap);
     }
 

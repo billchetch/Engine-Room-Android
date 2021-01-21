@@ -16,6 +16,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="TextView"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -25,6 +26,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:text="TextView"
+        android:textStyle="bold"
         app:layout_constraintStart_toEndOf="@+id/eventCreated"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -34,6 +36,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:text="TextView"
+        android:textColor="@color/lightGrey"
+        android:textStyle="italic"
         app:layout_constraintStart_toEndOf="@+id/eventType"
         app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

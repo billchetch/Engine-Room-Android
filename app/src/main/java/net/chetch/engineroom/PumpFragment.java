@@ -16,6 +16,7 @@ import java.util.Map;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
 public class PumpFragment extends IndicatorFragment implements IUIUpdatable {
@@ -34,7 +35,7 @@ public class PumpFragment extends IndicatorFragment implements IUIUpdatable {
         super.onActivityCreated(savedInstanceState);
 
         if (model == null) {
-            model = ViewModelProviders.of(getActivity()).get(EngineRoomMessagingModel.class);
+            model = new ViewModelProvider(getActivity()).get(EngineRoomMessagingModel.class);
 
             model.getPump(pumpID).observe(getViewLifecycleOwner(), pmp -> {
                 pump = pmp;
@@ -57,7 +58,7 @@ public class PumpFragment extends IndicatorFragment implements IUIUpdatable {
                 model.enablePump(pumpID, true);
                 break;
             case IndicatorFragment.MENU_ITEM_VIEW_STATS:
-                ((MainPageFragment)getParentFragment()).openViewStats(pumpID);
+                ((MainPageFragment)getParentFragment()).openViewStats(pumpID, indicatorName);
                 return true;
         }
         return super.onMenuItemClick(menuItem);

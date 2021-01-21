@@ -10,7 +10,6 @@ import android.widget.TextView;
 import net.chetch.appframework.GenericFragment;
 import net.chetch.appframework.RecyclerViewFragmentAdapter;
 import net.chetch.cmalarms.data.AlarmsLogEntry;
-import net.chetch.engineroom.data.EngineRoomEvent;
 import net.chetch.utilities.Utils;
 
 import java.util.Calendar;
@@ -22,9 +21,10 @@ public class StatsAlarmItemFragment extends GenericFragment implements RecyclerV
     View contentView;
     public AlarmsLogEntry entry;
 
-    TextView eventType;
-    TextView created;
-    TextView description;
+    TextView alarmName;
+    TextView alarmEntryCreated;
+    TextView alarmState;
+    TextView alarmEntryDescription;
 
     @Override
     public void onBindData(Object data) {
@@ -39,19 +39,23 @@ public class StatsAlarmItemFragment extends GenericFragment implements RecyclerV
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         contentView = inflater.inflate(R.layout.stats_alarms_log_item, container, false);
 
-        //eventType = contentView.findViewById(R.id.eventType);
-        //created = contentView.findViewById(R.id.eventCreated);
-        //description = contentView.findViewById(R.id.eventDescription);
+        alarmName = contentView.findViewById(R.id.alarmName);
+        alarmState = contentView.findViewById(R.id.alarmState);
+        alarmEntryCreated = contentView.findViewById(R.id.alarmEntryCreated);
+        alarmEntryDescription = contentView.findViewById(R.id.alarmEntryDescription);
 
         return contentView;
     }
 
     public void populateContent(){
         try{
-            /*eventType.setText(event.getValue("event_type").toString());
-            description.setText(event.getValue("event_description").toString());
-            Calendar cal = event.getCreated();
-            created.setText(Utils.formatDate(cal, StatsPageFragment.EVENT_DATE_FORMAT));*/
+            alarmName.setText(entry.getAlarmName());
+            alarmState.setText(entry.getAlarmState().toString());
+            String desc = entry.getAlarmMessage();
+            if(desc == null || desc.isEmpty())desc = entry.getComments();
+            alarmEntryDescription.setText(desc == null || desc.isEmpty() ? "N/A" : desc);
+            Calendar cal = entry.getCreated();
+            alarmEntryCreated.setText(Utils.formatDate(cal, StatsPageFragment.EVENT_DATE_FORMAT));
         } catch (Exception e){
             Log.e("STAIF", e.getMessage());
         }
